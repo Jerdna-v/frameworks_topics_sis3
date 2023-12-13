@@ -10,7 +10,7 @@ class SingleNovicaView extends React.Component{
         }
     }
     QSetViewInParent=(obj)=>{
-    this.props.QIDFromChild(obj)
+        this.props.QIDFromChild(obj)
     }
 
 

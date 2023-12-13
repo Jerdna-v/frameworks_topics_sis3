@@ -130,6 +130,7 @@ class App extends Component {
                       Login
                     </a>
                   </li>
+
                 </ul>
               </div>
             </div>

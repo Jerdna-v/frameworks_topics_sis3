@@ -8,13 +8,10 @@ class LoginView extends React.Component{
     {
         super(props);
         this.state={
-          logged: true,
-          user: {
-              id: null,
-              user_name: "",
-              user_email: "",
-              user_password: ""
+          user_input: {
+             
           },
+          user:{},
           status: {
               success: null,
               msg: ""
@@ -23,27 +20,26 @@ class LoginView extends React.Component{
     }
 
     QGetTextFromField=(e)=>{
-      this.setState(this.state.user[e.target.name] = [e.target.value])
-      console.log(this.state)
+      this.setState(prevState=>({
+        user_input:{...prevState.user_input,[e.target.name]:e.target.value}
+      }))
     }
-
+    
   QPostLogin=()=>{
     // TODO: you should validate the data before sending it to the server,
     
     axios.post('http://88.200.63.148:5000/users/login',
     {
-      username:this.state.username,
-      password:this.state.password
+      username:this.state.user_input.username,
+      password:this.state.user_input.password
     })
     .then(response=>{
       console.log("Sent to server...")
       console.log(response.status)
       if(response.status == 200){
         console.log(response.data)
-        this.props.QUserFromChild(response.data)
-      }else if(response.status == 204){
-         // Request was processed but user is not registered, or credentials are incorrect, do something.
-         console.log("Request was ok but something with user data is not correct")
+        this.setState(this.state.status = response.data.status)
+        this.setState(this.state.user = response.data.user)
       }else{
         console.log("Something is really wrong, DEBUG!")
       }
@@ -75,7 +71,13 @@ class LoginView extends React.Component{
                   </div>
                 </form>
                 <button style={{margin:"10px"}} onClick={()=>this.QPostLogin()}
-                        className="btn btn-primary bt">Sign in</button>
+                        className="btn btn-primary bt">Sign in 123</button>
+
+                {/* TODO: We should display error to the user if something went wrong or a
+                success message  if an item was added. Use paragraph with the following classNmes:
+                => no success: <p className="alert alert-danger" role="alert"> 
+                => success: <p className="alert alert-success" role="alert"> 
+                */}
               </div>
         )
     }
