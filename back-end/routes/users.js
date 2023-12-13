@@ -35,6 +35,7 @@ const DB=require('../db/dbConn.js')
 
 users.post('/login', async (req, res, next) => {
     try{
+        console.log(req.body);
      const username = req.body.username;
      const password = req.body.password;
      if (username && password){
@@ -42,16 +43,18 @@ users.post('/login', async (req, res, next) => {
          if(queryResult.length>0){
              if(password===queryResult[0].user_password){
                  console.log(queryResult)
+                 //req.session.user = queryResult
+                 req.session.logged_in = true
                  res.statusCode = 200;
-                 res.send({logged:true, user:queryResult[0], status:{success: true, msg: "Logged in"}})                 
+                 res.send({user:queryResult[0], status:{success: true, msg: "Logged in"}})                 
              } else{
                 res.statusCode = 200;
-                res.send({logged:false, user: null, status:{success: false, msg: "Username or password incorrect"}})                 
+                res.send({user: null, status:{success: false, msg: "Username or password incorrect"}})                 
                 console.log("INCORRECT PASSWORD")
              }
          } else{
             res.statusCode = 200;
-            res.send({logged:false, user: null, status:{success: false, msg: "Username not registsred"}})                             
+            res.send({user: null, status:{success: false, msg: "Username not registsred"}})                             
          }
      } 
      else {
@@ -98,20 +101,5 @@ users.post('/register', async (req, res, next) => {
     }
     
 });
-
-//Gets all the news in the DB 
-users.get('/session', async (req,res, next)=>{
-    try{
-        console.log("session data: ")
-        //req.session.user[0]["data"] = "some data";
-        console.log(req.session.user)
-        res.json(req.session.user); 
-    }
-    catch(err){
-        console.log(err)
-        res.sendStatus(500)
-        next()
-    }
-})
 
 module.exports=users

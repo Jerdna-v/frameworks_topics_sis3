@@ -7,14 +7,6 @@ require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000
 
-app.set('trust proxy', 1) // trust first proxy
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}))
-
 //Some configurations
 app.use(express.urlencoded({extended : true}));
 app.use(cors({
