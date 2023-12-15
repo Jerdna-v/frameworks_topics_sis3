@@ -44,7 +44,7 @@ users.post('/login', async (req, res, next) => {
              if(password===queryResult[0].user_password){
                  console.log(queryResult)
                  //req.session.user = queryResult
-                 req.session.logged_in = true
+                 //req.session.logged_in = true
                  res.statusCode = 200;
                  res.send({user:queryResult[0], status:{success: true, msg: "Logged in"}})                 
              } else{
