@@ -162,24 +162,11 @@ class App extends Component {
                     </a>
                   </li>
 
-                  {this.state.user != null
-                    ? <li className="nav-item"><a onClick={
-                      () => { this.QSetView({ page: LOGOUT }); this.QPostLogout(this); }
-                    } className="nav-link " href="#"> Logout </a>
-                    </li>
-                    : <li className="nav-item" ><a onClick={this.QSetView.bind(this, { page: LOGIN })}
+                 <li className="nav-item" ><a onClick={this.QSetView.bind(this, { page: LOGIN })}
                       className="nav-link " href="#"> Login </a>
-                    </li>}
+                 </li>
+                
                 </ul>
-
-
-                {this.state.user != null
-                  ? <ul className="navbar-nav me-auto mb-2 mb-lg-0 pull-right" >
-                    <li className="nav-item"> <a className="nav-link">Welcome {this.state.user.user_name}</a></li>
-                  </ul>
-                  : null}
-
-
               </div>
             </div>
           </nav>

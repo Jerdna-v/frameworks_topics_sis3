@@ -60,12 +60,7 @@ class LoginView extends React.Component {
       return
     }
 
-    let req = axios.create({
-      timeout: 20000,
-      withCredentials: true,
-    });
-
-    req.post(API_URL + '/users/login',
+      axios.post(API_URL + '/users/login',
       {
         username: this.state.user_input.username,
         password: this.state.user_input.password

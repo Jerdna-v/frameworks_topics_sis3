@@ -35,12 +35,7 @@ class AddNovicaView extends React.Component {
     }
     console.log("QPostNovica");
 
-    let req = axios.create({
-      timeout: 20000,
-      withCredentials: true
-    });
-
-    req.post(API_URL + '/novice', {
+    axios.post(API_URL + '/novice', {
       title: this.state.novica.title,
       slug: this.state.novica.slug,
       text: this.state.novica.text
