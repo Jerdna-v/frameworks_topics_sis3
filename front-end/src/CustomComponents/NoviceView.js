@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import axios from "axios";
+import { API_URL } from "../Utils/Configuration";
 
 class NoviceView extends React.Component{   
     constructor(props)
@@ -12,12 +13,13 @@ class NoviceView extends React.Component{
     }
     
     QSetViewInParent=(obj)=>{
+        console.log(obj)
         this.props.QIDFromChild(obj)
     }
 
     componentDidMount()
     {
-    axios.get('http://88.200.63.148:5000/novice')
+    axios.get(API_URL + '/novice')
     .then(response=>{
         console.log(response.data)
         this.setState({

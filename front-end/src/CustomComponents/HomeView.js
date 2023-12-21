@@ -1,4 +1,5 @@
 import React from "react";
+import { API_URL } from "../Utils/Configuration";
 
 class HomeView extends React.Component{
     render(){

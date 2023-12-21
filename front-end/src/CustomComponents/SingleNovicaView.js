@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import axios from 'axios'
+import { API_URL } from "../Utils/Configuration";
 
 class SingleNovicaView extends React.Component{
     constructor(props){
@@ -15,7 +16,7 @@ class SingleNovicaView extends React.Component{
 
 
     componentDidMount(){
-    axios.get("http://88.200.63.148:5000/novice/"+this.props.data)
+    axios.get(API_URL + "/novice/"+this.props.data)
     .then(response =>{
         console.log(response.data)
         this.setState({

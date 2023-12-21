@@ -1,5 +1,5 @@
 import {Component} from "react";
-
+import {ABOUT, NOVICE, ADDNEW, SIGNUP, LOGIN, NOVICA, HOME} from "./Utils/Constants"
 import HomeView from "./CustomComponents/HomeView";
 import AboutView from "./CustomComponents/AboutView";
 import NoviceView from "./CustomComponents/NoviceView";
@@ -17,27 +17,27 @@ class App extends Component {
     };
   }
 
-  QGetView = (state) => {
+  QGetView(state){
     const page = state.CurrentPage;
     switch (page) {
-      case "about":
+      case ABOUT:
         return <AboutView />;
-      case "novice":
+      case NOVICE:
         return <NoviceView QIDFromChild={this.QSetView}/>;
-      case "addnew":
+      case ADDNEW:
         return <AddNovicaView />;
-      case "signup":
+      case SIGNUP:
         return <SignupView />;
-      case "login":
+      case LOGIN:
         return <LoginView />;
-      case "novica":
+      case NOVICA:
         return <SingleNovicaView  data={state.Novica}  QIDFromChild={this.QSetView}/>;
       default:
         return <HomeView />;
     }
   };
 
-  QSetView = (obj) => {
+  QSetView =(obj)=>{
     console.log("QSetView");
     this.setState({ 
       CurrentPage: obj.page,
@@ -79,8 +79,8 @@ class App extends Component {
                 <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                   <li className="nav-item">
                     <a
-                      // onClick={() => this.QSetView({ page: "about" })}
-                      onClick={this.QSetView.bind(this, { page: "about" })}
+                      // onClick={() => this.QSetView({ page: ABOUT })}
+                      onClick={this.QSetView.bind(this, { page: ABOUT })}
                       className="nav-link "
                       href="#"
                     >
@@ -90,8 +90,8 @@ class App extends Component {
 
                   <li className="nav-item">
                     <a
-                      // onClick={() => this.QSetView({ page: "novice" })}
-                      onClick={this.QSetView.bind(this, { page: "novice" })}                
+                      // onClick={() => this.QSetView({ page: NOVICE })}
+                      onClick={this.QSetView.bind(this, { page: NOVICE })}                
                       className="nav-link "
                       href="#"
                     >
@@ -101,8 +101,8 @@ class App extends Component {
 
                   <li className="nav-item">
                     <a
-                     //onClick={() => this.QSetView({ page: "addnew" })}
-                      onClick={this.QSetView.bind(this, { page: "addnew" })}
+                     //onClick={() => this.QSetView({ page: ADDNEW })}
+                      onClick={this.QSetView.bind(this, { page: ADDNEW })}
                       className="nav-link"
                     >
                       Add news
@@ -111,8 +111,8 @@ class App extends Component {
 
                   <li className="nav-item">
                     <a
-                      //onClick={() => this.QSetView({ page: "signup" })}
-                      onClick={this.QSetView.bind(this, { page: "signup" })}
+                      //onClick={() => this.QSetView({ page: SIGNUP })}
+                      onClick={this.QSetView.bind(this, { page: SIGNUP })}
                       className="nav-link "
                       href="#"
                     >
@@ -122,8 +122,8 @@ class App extends Component {
 
                   <li className="nav-item">
                     <a
-                      //onClick={() => this.QSetView({ page: "login" })}
-                      onClick={this.QSetView.bind(this, { page: "login" })}
+                      //onClick={() => this.QSetView({ page: LOGIN })}
+                      onClick={this.QSetView.bind(this, { page: LOGIN })}
                       className="nav-link "
                       href="#"
                     >
