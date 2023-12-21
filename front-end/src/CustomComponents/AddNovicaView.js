@@ -34,12 +34,17 @@ class AddNovicaView extends React.Component {
       return
     }
     console.log("QPostNovica");
-    axios.post(API_URL + '/novice', {
+
+    let req = axios.create({
+      timeout: 20000,
+      withCredentials: true
+    });
+
+    req.post(API_URL + '/novice', {
       title: this.state.novica.title,
       slug: this.state.novica.slug,
       text: this.state.novica.text
-    })
-      .then(response => {
+    }).then(response => {
         /// TODO: You should indicate if the element was added, or if not show the error
         this.setState(this.state.status = response.data)
         console.log("Sent to server...")
@@ -84,7 +89,7 @@ class AddNovicaView extends React.Component {
           style={{ margin: "10px" }}>
           Send
         </button>
-        
+
         {/* TODO: We should display error to the user if something went wrong or a
         success message  if an item was added. Use paragraph with the following classNmes:
         => no success: <p className="alert alert-danger" role="alert"> 

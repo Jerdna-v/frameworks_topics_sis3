@@ -41,7 +41,11 @@ novice.post('/', async (req, res, next) => {
             if (queryResult.affectedRows) {
                 console.log("New article added!!")
                 res.statusCode = 200
-                res.send({ success: true, msg: "News item added" })
+                res.send(
+{ 
+    success: true, 
+    msg: "News item added" 
+})
             }
         } else {
             console.log("A field is empty!!")
