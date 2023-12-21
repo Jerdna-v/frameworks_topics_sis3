@@ -48,15 +48,6 @@ users.get('/session', async (req, res, next) => {
     }
 })
 
-users.get('/logout', async (req, res, next) => {
-    try {
-        req.session.destroy()
-        res.json({ status: { success: true, msg: "Session destoryed" } })
-    } catch (error) {
-        res.sendStatus(500)
-    }
-})
-
 //Inserts a new user in our database id field are complete
 users.post('/register', async (req, res, next) => {
     try {

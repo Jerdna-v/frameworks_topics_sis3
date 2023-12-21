@@ -30,10 +30,6 @@ novice.get('/:id', async (req, res, next) => {
 
 //Inserts one new to the database
 novice.post('/', async (req, res, next) => {
-    if (!req.session.logged_in) {
-        res.json({ status: { success: false, msg: "Can not add news. You need to log-in!" } })
-        return
-    }
     try {
         const title = req.body.title
         const slug = req.body.slug
