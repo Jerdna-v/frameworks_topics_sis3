@@ -4,7 +4,7 @@ const DB = require('../db/dbConn.js')
 
 users.post('/login', async (req, res, next) => {
     try {
-        //console.log(req.body);
+        console.log(req.body);
         const username = req.body.username;
         const password = req.body.password;
         if (username && password) {
@@ -15,6 +15,8 @@ users.post('/login', async (req, res, next) => {
                     req.session.user = queryResult
                     req.session.logged_in = true
                     res.statusCode = 200;
+                    console.log(req.session)
+                    console.log(req.cookies)
                     res.json({ user: queryResult[0], status: { success: true, msg: "Logged in" } })
                 } else {
                     res.statusCode = 200;
@@ -51,7 +53,8 @@ users.get('/session', async (req, res, next) => {
 users.get('/logout', async (req, res, next) => {
     try {
         req.session.destroy()
-        res.json({ status: { success: true, msg: "Session destoryed" } })
+        console.log("Session destoryed")
+        res.json({ success: true, msg: "Session destoryed"})
     } catch (error) {
         res.sendStatus(500)
     }

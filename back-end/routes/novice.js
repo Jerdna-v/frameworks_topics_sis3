@@ -30,8 +30,13 @@ novice.get('/:id', async (req, res, next) => {
 
 //Inserts one new to the database
 novice.post('/', async (req, res, next) => {
+    console.log(req.session)
+    console.log(req.cookies)
     if (!req.session.logged_in) {
-        res.json({ status: { success: false, msg: "Can not add news. You need to log-in!" } })
+        res.json({
+            success: false,
+            msg: "Can not add news. You need to log-in!"
+        })
         return
     }
     try {
@@ -45,7 +50,11 @@ novice.post('/', async (req, res, next) => {
             if (queryResult.affectedRows) {
                 console.log("New article added!!")
                 res.statusCode = 200
-                res.send({ success: true, msg: "News item added" })
+                res.send(
+{ 
+    success: true, 
+    msg: "News item added" 
+})
             }
         } else {
             console.log("A field is empty!!")
