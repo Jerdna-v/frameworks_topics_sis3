@@ -3,9 +3,17 @@ const session = require('express-session')
 const cors=require("cors")
 
 
+
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000
+
+app.use(session({
+    secret: 'our litle secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {secure: false}
+}))
 
 //Some configurations
 app.use(express.urlencoded({extended : true}));

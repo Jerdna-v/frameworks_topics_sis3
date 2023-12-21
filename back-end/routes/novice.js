@@ -1,14 +1,14 @@
-const express= require("express")
+const express = require("express")
 const novice = express.Router();
-const DB=require('../db/dbConn.js')
+const DB = require('../db/dbConn.js')
 
 //Gets all the news in the DB 
-novice.get('/', async (req,res, next)=>{
-    try{
-        const queryResult=await DB.allNovice();
+novice.get('/', async (req, res, next) => {
+    try {
+        const queryResult = await DB.allNovice();
         res.json(queryResult)
     }
-    catch(err){
+    catch (err) {
         console.log(err)
         res.sendStatus(500)
         next()
@@ -16,46 +16,49 @@ novice.get('/', async (req,res, next)=>{
 })
 
 //Gets one new based on the id 
- novice.get('/:id', async (req,res, next)=>{
-    try{
-        const queryResult=await DB.oneNovica(req.params.id)
+novice.get('/:id', async (req, res, next) => {
+    try {
+        const queryResult = await DB.oneNovica(req.params.id)
         res.json(queryResult)
     }
-    catch(err){
+    catch (err) {
         console.log(err)
         res.sendStatus(500)
         next()
     }
-}) 
+})
 
 //Inserts one new to the database
-novice.post('/', async (req,res, next)=>{       
-    try{
+novice.post('/', async (req, res, next) => {
+    if (!req.session.logged_in) {
+        res.json({ status: { success: false, msg: "Can not add news. You need to log-in!" } })
+        return
+    }
+    try {
         const title = req.body.title
         const slug = req.body.slug
         const text = req.body.text
-      
-        const isAcompleteNovica=title && slug && text
-        if (isAcompleteNovica){
-            const queryResult=await DB.creteNovica(title,slug,text)
-            if (queryResult.affectedRows){
-                console.log("New article added!!") 
-                res.statusCode=200
-                res.send({success: true, msg: "News item added"})        
-            } 
-        }else{
+
+        const isAcompleteNovica = title && slug && text
+        if (isAcompleteNovica) {
+            const queryResult = await DB.creteNovica(title, slug, text)
+            if (queryResult.affectedRows) {
+                console.log("New article added!!")
+                res.statusCode = 200
+                res.send({ success: true, msg: "News item added" })
+            }
+        } else {
             console.log("A field is empty!!")
-            res.statusCode=200
-            res.send({success: false,  msg: "Input item missing"})        
+            res.statusCode = 200
+            res.send({ success: false, msg: "Input item missing" })
         }
         res.end()
 
-        }catch(err){
+    } catch (err) {
         console.log(err)
         res.sendStatus(500)
         next()
-    }}) 
+    }
+})
 
-
-
-module.exports=novice
+module.exports = novice
