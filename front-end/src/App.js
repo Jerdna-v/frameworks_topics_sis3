@@ -53,27 +53,6 @@ class App extends Component {
     }
   };
 
-  QPostLogout = () => {
-    let req = axios.create({
-      timeout: 20000,
-      withCredentials: true,
-    });
-
-    req.get(API_URL + '/users/logout',
-      {}, { withCredentials: true }).then(response => {
-        if (response.status == 200) {
-          console.log(response.data)
-          this.setState(this.state.status = response.data)
-          this.setState(this.state.user = null)
-        } else {
-          console.log("Something is really wrong, DEBUG!")
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-  }
-
   QSetView = (obj) => {
     this.setState(this.state.status = { success: null, msg: "" })
 
