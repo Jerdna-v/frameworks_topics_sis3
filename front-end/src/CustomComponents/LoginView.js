@@ -2,8 +2,6 @@ import React from "react";
 import PropTypes from 'prop-types';
 import axios from "axios";
 import { API_URL } from "../Utils/Configuration";
-import Cookies from 'universal-cookie';
-const cookies = new Cookies();
 
 
 class LoginView extends React.Component {
@@ -22,12 +20,6 @@ class LoginView extends React.Component {
       }
     }
   }
-
-  /*QGetTextFromField=(e)=>{
-    this.setState(prevState=>({
-      user_input:{...prevState.user_input,[e.target.name]:e.target.value}
-    }))
-  }*/
 
   QGetTextFromField(e) {
     this.state.user_input[e.target.name] = e.target.value;
@@ -64,14 +56,6 @@ class LoginView extends React.Component {
           console.log(response.data)
           this.setState(this.state.status = response.data.status)
           this.setState(this.state.user = response.data.user)
-          if (this.state.status.success) {
-            //Setting cookies for 24 hours
-            if(this.state.user_input.remember_me){
-              cookies.set('user_name', this.state.user.user_name, { path: '/', expires: new Date(Date.now() + 86400000) });
-              cookies.set('user_password', this.state.user.user_password, { path: '/', expires: new Date(Date.now() + 86400000) });
-            }
-            this.props.QUserFromChild(this.state)
-          }
           
         } else {
           console.log("Something is really wrong, DEBUG!")
@@ -131,9 +115,6 @@ class LoginView extends React.Component {
   }
 }
 
-LoginView.propTypes = {
-  QUserFromChild: PropTypes.func.isRequired,
-};
 
 
 

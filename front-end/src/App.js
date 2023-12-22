@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { ABOUT, NOVICE, ADDNEW, SIGNUP, LOGIN, NOVICA, HOME, LOGOUT } from "./Utils/Constants"
+import { ABOUT, NOVICE, ADDNEW, SIGNUP, LOGIN, NOVICA, HOME } from "./Utils/Constants"
 import HomeView from "./CustomComponents/HomeView";
 import AboutView from "./CustomComponents/AboutView";
 import NoviceView from "./CustomComponents/NoviceView";
@@ -7,11 +7,6 @@ import AddNovicaView from "./CustomComponents/AddNovicaView";
 import SignupView from "./CustomComponents/SignupView";
 import LoginView from "./CustomComponents/LoginView";
 import SingleNovicaView from "./CustomComponents/SingleNovicaView";
-import axios from "axios";
-import { API_URL } from "./Utils/Configuration";
-import Cookies from 'universal-cookie';
-const cookies = new Cookies();
-
 
 class App extends Component {
   constructor(props) {
@@ -40,8 +35,6 @@ class App extends Component {
         return <SignupView />;
       case LOGIN:
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
-      case LOGOUT:
-        return <HomeView />;
       case NOVICA:
         return <SingleNovicaView data={state.Novica} QIDFromChild={this.QSetView} />;
       default:
@@ -58,10 +51,6 @@ class App extends Component {
       Novica: obj.id || 0
     });
   };
-
-  QSetLoggedIn = (obj) => {
-    this.setState(this.state.user = obj.user)
-  }
 
   render() {
     return (
@@ -149,9 +138,6 @@ class App extends Component {
 
         <div id="viewer" className="row container">
           {this.QGetView(this.state)}
-          {this.state.status.success ?
-            <p className="alert alert-success"
-              role="alert">{this.state.status.msg}</p> : null}
         </div>
       </div>
     );
