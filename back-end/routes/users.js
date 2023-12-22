@@ -14,8 +14,6 @@ users.post('/login', async (req, res, next) => {
                     req.session.user = queryResult
                     req.session.logged_in = true
                     res.statusCode = 200;
-                    console.log(req.session)
-                    console.log(req.cookies)
                     res.json({ user: queryResult[0], status: { success: true, msg: "Logged in" } })
                 } else {
                     res.statusCode = 200;
@@ -39,7 +37,6 @@ users.post('/login', async (req, res, next) => {
         next()
     }
 });
-
 
 users.get('/session', async (req, res, next) => {
     try {
