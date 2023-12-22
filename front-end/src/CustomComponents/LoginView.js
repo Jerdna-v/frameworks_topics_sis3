@@ -23,15 +23,6 @@ class LoginView extends React.Component {
     }
   }
 
-  componentDidMount = () => {
-    if (cookies.get('user_name') != null && this.state.user == null) {
-      this.state.user_input.username = String(cookies.get('user_name'))
-      this.state.user_input.password = String(cookies.get('user_password'))
-      this.setState(this.state.user_input = this.state.user_input)
-      this.QPostLogin()
-    }
-  }
-
   /*QGetTextFromField=(e)=>{
     this.setState(prevState=>({
       user_input:{...prevState.user_input,[e.target.name]:e.target.value}

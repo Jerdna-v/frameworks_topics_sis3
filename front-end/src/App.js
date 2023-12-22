@@ -25,10 +25,6 @@ class App extends Component {
       },
       user: null
     };
-
-    if (cookies.get('user_name') != null && this.state.user == null) {
-      this.state.CurrentPage = LOGIN
-    }
   }
 
   QGetView(state) {

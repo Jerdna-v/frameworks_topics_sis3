@@ -11,7 +11,6 @@ users.post('/login', async (req, res, next) => {
             const queryResult = await DB.AuthUser(username)
             if (queryResult.length > 0) {
                 if (password === queryResult[0].user_password) {
-                    //console.log(queryResult)
                     req.session.user = queryResult
                     req.session.logged_in = true
                     res.statusCode = 200;
