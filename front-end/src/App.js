@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { ABOUT, NOVICE, ADDNEW, SIGNUP, LOGIN, NOVICA, HOME, LOGOUT } from "./Utils/Constants"
+import { ABOUT, NOVICE, ADDNEW, SIGNUP, LOGIN, NOVICA, HOME, LOGOUT, UPLOAD } from "./Utils/Constants"
 import HomeView from "./CustomComponents/HomeView";
 import AboutView from "./CustomComponents/AboutView";
 import NoviceView from "./CustomComponents/NoviceView";
@@ -7,6 +7,7 @@ import AddNovicaView from "./CustomComponents/AddNovicaView";
 import SignupView from "./CustomComponents/SignupView";
 import LoginView from "./CustomComponents/LoginView";
 import SingleNovicaView from "./CustomComponents/SingleNovicaView";
+import FilesUploadComponent from "./CustomComponents/FilesUpload";
 import axios from "axios";
 import { API_URL } from "./Utils/Configuration";
 import Cookies from 'universal-cookie';
@@ -46,6 +47,8 @@ class App extends Component {
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
       case LOGOUT:
         return <HomeView />;
+      case UPLOAD:
+        return <FilesUploadComponent />;
       case NOVICA:
         return <SingleNovicaView data={state.Novica} QIDFromChild={this.QSetView} />;
       default:
@@ -146,8 +149,21 @@ class App extends Component {
                       //onClick={() => this.QSetView({ page: ADDNEW })}
                       onClick={this.QSetView.bind(this, { page: ADDNEW })}
                       className="nav-link"
+                      href="#"
                     >
                       Add news
+                    </a>
+                  </li>
+
+
+                  <li className="nav-item">
+                    <a
+                      //onClick={() => this.QSetView({ page: ADDNEW })}
+                      onClick={this.QSetView.bind(this, { page: UPLOAD })}
+                      className="nav-link"
+                      href="#"
+                    >
+                      Upload
                     </a>
                   </li>
 
