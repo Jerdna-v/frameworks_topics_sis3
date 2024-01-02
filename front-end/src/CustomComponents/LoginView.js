@@ -26,13 +26,7 @@ class LoginView extends React.Component {
     this.setState({ user_input: this.state.user_input });
   }
 
-  QGetRememberMe(e) {
-    this.state.user_input.remember_me = !this.state.user_input.remember_me;
-    this.setState({ user_input: this.state.user_input });
-    console.log(this.state)
-  }
-
-
+  
   QPostLogin = () => {
     // TODO: you should validate the data before sending it to the server,
     if (this.state.user_input.username == "" |
@@ -86,15 +80,10 @@ class LoginView extends React.Component {
               className="form-control"
               id="exampleInputPassword1" />
           </div>
-          <div className="form-check">
-            <input className="form-check-input" type="checkbox" value="true" name="remember_me" id="flexCheckDefault" onChange={(e) => this.QGetRememberMe(e)} />
-            <label className="form-check-label" htmlFor="flexCheckDefault">Remember me</label>
-          </div>
+            {/* TODO: Add checkbox to the form. Use bootstrap to do it.*/}
         </form>
         <button style={{ margin: "10px" }} onClick={() => this.QPostLogin()}
           className="btn btn-primary bt">Sign</button>
-
-
 
         {/* TODO: We should display error to the user if something went wrong or a
       success message  if an item was added. Use paragraph with the following classNmes:
