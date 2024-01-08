@@ -9,7 +9,8 @@ class AddNovicaView extends React.Component {
       novica: {
         title: "",
         slug: "",
-        text: ""
+        text: "",
+        file: null
       },
       status: {
         success: null,
@@ -23,6 +24,13 @@ class AddNovicaView extends React.Component {
     console.log(this.state)
   }
 
+  // QUploadFile = () => {
+  //   this.setState(this.state.novica[e.target.name] = [e.target.value])
+  // }
+  QFileUplad = (e) => {
+    this.setState(this.state.novica["file"] = e.target.files[0])
+    console.log(this.state)
+  }
   QPostNovica = () => {
     /// TODO: We should avoid sending request that are incomplete
     if (this.state.novica.title == "" |
@@ -35,16 +43,18 @@ class AddNovicaView extends React.Component {
     }
     console.log("QPostNovica");
 
+    const data = new FormData() ;
+    data.append('file', this.state.novica.file)
+    data.append('title',this.state.novica.title)
+    data.append('text',this.state.novica.text)
+    data.append('slug',this.state.novica.slug)
+
     let req = axios.create({
       timeout: 20000,
       withCredentials: true
     });
 
-    req.post(API_URL + '/novice', {
-      title: this.state.novica.title,
-      slug: this.state.novica.slug,
-      text: this.state.novica.text
-    }).then(response => {
+    req.post(API_URL + '/novice', data).then(response => {
         /// TODO: You should indicate if the element was added, or if not show the error
         this.setState(this.state.status = response.data)
         console.log("Sent to server...")
@@ -52,7 +62,9 @@ class AddNovicaView extends React.Component {
       .catch(err => {
         console.log(err)
       })
-  }
+    }
+
+  
 
   render() {
     return (
@@ -85,6 +97,11 @@ class AddNovicaView extends React.Component {
             rows="3">
           </textarea>
         </div>
+        <div className="mb-3">
+          <label for="formFile" class="form-label">Default file input example</label>
+          <input class="form-control" type="file" id="file" name="file" onChange={(e) => {this.QFileUplad(e)}} />
+        </div>
+
         <button className="btn btn-primary bt" onClick={() => this.QPostNovica()}
           style={{ margin: "10px" }}>
           Send
