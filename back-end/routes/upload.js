@@ -13,8 +13,11 @@ const storage = multer.diskStorage({
     }
   })
   
+// Configure Multer,
 let upload_dest = multer({ dest: 'uploads/' })
 
+//upload_dest.single('file') => callback that should be called once this happens.
+//upload_dest.array('files') => callback that should be called once this happens.
 upload.post('/', upload_dest.single('file'), async (req, res, next) => {
     const file = req.file;
     console.log(file.filename);
