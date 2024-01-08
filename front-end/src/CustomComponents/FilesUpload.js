@@ -6,6 +6,8 @@ import { API_URL } from "../Utils/Configuration";
 
 class FilesUpload extends Component {
   
+  // differnt types of encoding of sending from data. Deafualt is application/x-www-form-urlencoded 
+  // for sending files you need to do multipart/form-data
   uploadFile(event){
     const data = new FormData() ;
     data.append('file', event.target.files[0]);
