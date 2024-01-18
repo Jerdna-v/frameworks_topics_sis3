@@ -53,12 +53,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const novice = require('./routes/novice')
 const users = require('./routes/users')
+const upload = require('./routes/upload')
 
 app.use('/novice', novice)
 app.use('/users', users)
+app.use('/uploadFile', upload)
 
 const path = require('path')
+console.log(__dirname)
 app.use(express.static(path.join(__dirname, "build")))
+app.use(express.static(path.join(__dirname, "uploads")))
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "build", "index.html")) 
 })

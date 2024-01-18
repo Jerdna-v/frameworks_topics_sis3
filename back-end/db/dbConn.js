@@ -36,9 +36,9 @@ dataPool.oneNovica=(id)=>{
   })
 }
 
-dataPool.creteNovica=(title,slug,text)=>{
+dataPool.creteNovica=(title,slug,text,file)=>{
   return new Promise ((resolve, reject)=>{
-    conn.query(`INSERT INTO news (title,slug,text) VALUES (?,?,?)`, [title, slug, text], (err,res)=>{
+    conn.query(`INSERT INTO news (title,slug,text, file) VALUES (?,?,?,?)`, [title, slug, text, file], (err,res)=>{
       if(err){return reject(err)}
       return resolve(res)
     })

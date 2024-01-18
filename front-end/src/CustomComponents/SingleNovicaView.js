@@ -35,6 +35,7 @@ class SingleNovicaView extends React.Component{
                 <div className="card-body">
                 <h5 className="card-title">{novica[0].slug}</h5>
                 <p className="card-text">{novica[0].text}</p>
+                <img className="img-fluid" src={API_URL+"/"+novica[0].file}></img>
                 <button onClick={()=>this.QSetViewInParent({page:"novice"})}  className="btn btn-primary">Return news</button>
                 </div>
             </div>
