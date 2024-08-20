@@ -43,13 +43,6 @@ class AddNovicaView extends React.Component {
     }
     console.log("QPostNovica");
 
-<<<<<<< HEAD
-    axios.post(API_URL + '/novice', {
-      title: this.state.novica.title,
-      slug: this.state.novica.slug,
-      text: this.state.novica.text
-    }).then(response => {
-=======
     const data = new FormData() ;
     data.append('file', this.state.novica.file)
     data.append('title',this.state.novica.title)
@@ -62,7 +55,6 @@ class AddNovicaView extends React.Component {
     });
 
     req.post(API_URL + '/novice', data).then(response => {
->>>>>>> T6-solution
         /// TODO: You should indicate if the element was added, or if not show the error
         this.setState(this.state.status = response.data)
         console.log("Sent to server...")
