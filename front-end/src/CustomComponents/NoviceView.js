@@ -17,6 +17,7 @@ class NoviceView extends React.Component {
     }
 
     componentDidMount() {
+
         axios.get(API_URL + '/novice')
             .then(response => {
                 console.log(response.data)
