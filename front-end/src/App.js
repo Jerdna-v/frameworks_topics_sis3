@@ -1,23 +1,18 @@
 import { Component } from "react";
-import { ABOUT, NOVICE, ADDNEW, SIGNUP, LOGIN, NOVICA, HOME, LOGOUT, UPLOAD } from "./Utils/Constants"
+import { SIGNUP, LOGIN, HOME, UPLOAD } from "./Utils/Constants";
 import HomeView from "./CustomComponents/HomeView";
-import AboutView from "./CustomComponents/AboutView";
-import NoviceView from "./CustomComponents/NoviceView";
-import AddNovicaView from "./CustomComponents/AddNovicaView";
 import SignupView from "./CustomComponents/SignupView";
 import LoginView from "./CustomComponents/LoginView";
-import SingleNovicaView from "./CustomComponents/SingleNovicaView";
 import FilesUploadComponent from "./CustomComponents/FilesUpload";
 import axios from "axios";
 import { API_URL } from "./Utils/Configuration";
-import Cookies from 'universal-cookie';
-const cookies = new Cookies();
+import Cookies from "universal-cookie";
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      CurrentPage: HOME,
+      CurrentPage: LOGIN,
       Novica: 1,
       status: {
         success: null,
@@ -32,48 +27,41 @@ class App extends Component {
   }
 
   QGetView(state) {
-    const page = state.CurrentPage;
-    switch (page) {
-      case ABOUT:
-        return <AboutView />;
-      case NOVICE:
-        return <NoviceView QIDFromChild={this.QSetView} />;
-      case ADDNEW:
-        return <AddNovicaView />;
+    const { CurrentPage } = state;
+    switch (CurrentPage) {
       case SIGNUP:
         return <SignupView />;
       case LOGIN:
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
-      case LOGOUT:
-        return <HomeView />;
+      case HOME:
+        return <HomeView user={this.state.user} QLogout={this.QHandleLogout} />;
       case UPLOAD:
         return <FilesUploadComponent />;
-      case NOVICA:
-        return <SingleNovicaView data={state.Novica} QIDFromChild={this.QSetView} />;
       default:
-        return <HomeView />;
+        return <LoginView QUserFromChild={this.QSetLoggedIn} />;
     }
-  };
+  }
   QPostLogout = () => {
     let req = axios.create({
       timeout: 20000,
       withCredentials: true,
     });
 
-    req.get(API_URL + '/users/logout',
-      {}, { withCredentials: true }).then(response => {
-        if (response.status == 200) {
-          console.log(response.data)
-          this.setState(this.state.status = response.data)
-          this.setState(this.state.user = null)
+    req
+      .get(`${API_URL}/users/logout`, {}, { withCredentials: true })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log(response.data);
+          this.setState((this.state.status = response.data));
+          this.setState({ user: null, CurrentPage: LOGIN }); // Redirect to LoginView
         } else {
-          console.log("Something is really wrong, DEBUG!")
+          console.log("Something is really wrong, DEBUG!");
         }
       })
-      .catch(err => {
-        console.log(err)
-      })
-  }
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   QSetView = (obj) => {
     this.setState(this.state.status = { success: null, msg: "" })
@@ -91,119 +79,14 @@ class App extends Component {
   render() {
     return (
       <div id="APP" className="container">
-        <div id="menu" className="row">
-          <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-            <div className="container-fluid">
-              <a
-                //onClick={() => this.QSetView({ page: "home" })}
-                onClick={this.QSetView.bind(this, { page: "home" })}
-                className="navbar-brand"
-                href="#"
-              >
-                Home
-              </a>
-              <button
-                className="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-              >
-                <span className="navbar-toggler-icon"></span>
-              </button>
-
-              <div
-                className="collapse navbar-collapse"
-                id="navbarSupportedContent"
-              >
-                <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                  <li className="nav-item">
-                    <a
-                      // onClick={() => this.QSetView({ page: ABOUT })}
-                      onClick={this.QSetView.bind(this, { page: ABOUT })}
-                      className="nav-link "
-                      href="#"
-                    >
-                      About
-                    </a>
-                  </li>
-
-                  <li className="nav-item">
-                    <a
-                      // onClick={() => this.QSetView({ page: NOVICE })}
-                      onClick={this.QSetView.bind(this, { page: NOVICE })}
-                      className="nav-link "
-                      href="#"
-                    >
-                      News
-                    </a>
-                  </li>
-
-                  <li className="nav-item">
-                    <a
-                      //onClick={() => this.QSetView({ page: ADDNEW })}
-                      onClick={this.QSetView.bind(this, { page: ADDNEW })}
-                      className="nav-link"
-                      href="#"
-                    >
-                      Add news
-                    </a>
-                  </li>
-
-
-                  <li className="nav-item">
-                    <a
-                      //onClick={() => this.QSetView({ page: ADDNEW })}
-                      onClick={this.QSetView.bind(this, { page: UPLOAD })}
-                      className="nav-link"
-                      href="#"
-                    >
-                      Upload
-                    </a>
-                  </li>
-
-                  <li className="nav-item">
-                    <a
-                      //onClick={() => this.QSetView({ page: SIGNUP })}
-                      onClick={this.QSetView.bind(this, { page: SIGNUP })}
-                      className="nav-link "
-                      href="#"
-                    >
-                      Sign up
-                    </a>
-                  </li>
-
-                  {this.state.user != null
-                    ? <li className="nav-item"><a onClick={
-                      () => { this.QSetView({ page: LOGOUT }); this.QPostLogout(this); }
-                    } className="nav-link " href="#"> Logout </a>
-                    </li>
-                    : <li className="nav-item" ><a onClick={this.QSetView.bind(this, { page: LOGIN })}
-                      className="nav-link " href="#"> Login </a>
-                    </li>}
-                </ul>
-
-
-                {this.state.user != null
-                  ? <ul className="navbar-nav me-auto mb-2 mb-lg-0 pull-right" >
-                    <li className="nav-item"> <a className="nav-link">Welcome {this.state.user.user_name}</a></li>
-                  </ul>
-                  : null}
-
-              </div>
-            </div>
-          </nav>
-        </div>
-
         <div id="viewer" className="row container">
           {this.QGetView(this.state)}
-          {this.state.status.success ?
-            <p className="alert alert-success"
-              role="alert">{this.state.status.msg}</p> : null}
+          {this.state.status.success && (
+            <p className="alert alert-success" role="alert">
+              {this.state.status.msg}
+            </p>
+          )}
         </div>
-
       </div>
     );
   }
