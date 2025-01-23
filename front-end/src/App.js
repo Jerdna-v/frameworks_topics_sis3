@@ -42,7 +42,7 @@ class App extends Component {
       case LOGIN:
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
       case HOME:
-        return <HomeView user={this.state.user} QLogout={this.QPostLogout} />;
+        return <HomeView user={this.state.user} QSetView={this.QSetView} QLogout={this.QPostLogout} />;
       case UPLOAD:
         return <FilesUploadComponent />;
       default:
