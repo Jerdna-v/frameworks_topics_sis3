@@ -65,8 +65,6 @@ dataPool.AddUser=(username,email,password)=>{
   })
 }
 
-
-//
 dataPool.getAllUsers = () => {
   return new Promise((resolve, reject) => {
     conn.query('SELECT * FROM Users', (err, res) => {
@@ -75,6 +73,7 @@ dataPool.getAllUsers = () => {
     });
   });
 };
+
 dataPool.AuthUser_ = (username) => {
   return new Promise((resolve, reject) => {
     conn.query(
@@ -125,7 +124,6 @@ dataPool.deleteUser = (uid) => {
   });
 };
 
-// 4. CRUD operations for Notifications
 dataPool.getAllNotifications = () => {
   return new Promise((resolve, reject) => {
     conn.query('SELECT * FROM Notifications', (err, res) => {
@@ -157,5 +155,103 @@ dataPool.deleteNotification = (nuid) => {
   });
 };
 
+dataPool.createTables = () => {
+  return new Promise((resolve, reject) => {
+    const createMachinesTable = `
+      CREATE TABLE IF NOT EXISTS Machines (
+        mid INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100),
+        type VARCHAR(100),
+        location VARCHAR(255),
+        start_date DATE
+      );
+    `;
+    const createUsersTable = `
+      CREATE TABLE IF NOT EXISTS Users (
+        uid INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(100),
+        password VARCHAR(255),
+        name VARCHAR(100),
+        type ENUM('owner', 'worker'),
+        phone_number VARCHAR(15),
+        start_date DATE
+      );
+    `;
+    const createNotificationsTable = `
+      CREATE TABLE IF NOT EXISTS Notifications (
+        nuid INT AUTO_INCREMENT PRIMARY KEY,
+        uid INT,
+        muid INT,
+        type VARCHAR(100),
+        context TEXT,
+        FOREIGN KEY (uid) REFERENCES Users(uid),
+        FOREIGN KEY (muid) REFERENCES Machines(mid)
+      );
+    `;
+    conn.query(
+      createMachinesTable + createUsersTable + createNotificationsTable,
+      (err, res) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(res);
+      }
+    );
+  });
+};
+
+
+dataPool.getAllMachines = () => {
+  return new Promise((resolve, reject) => {
+    conn.query('SELECT * FROM Machines', (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.addMachine = (name, type, location, startDate) => {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      'INSERT INTO Machines (name, type, location, start_date) VALUES (?,?,?,?)',
+      [name, type, location, startDate],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve(res);
+      }
+    );
+  });
+};
+
+dataPool.updateMachine = (mid, name, type, location, startDate) => {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      'UPDATE Machines SET name = ?, type = ?, location = ?, start_date = ? WHERE mid = ?',
+      [name, type, location, startDate, mid],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve(res);
+      }
+    );
+  });
+};
+
+dataPool.deleteMachine = (mid) => {
+  return new Promise((resolve, reject) => {
+    conn.query('DELETE FROM Machines WHERE mid = ?', mid, (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.oneMachine=(mid)=>{
+  return new Promise ((resolve, reject)=>{
+    conn.query(`SELECT * FROM Machines WHERE mid = ?`, mid, (err,res)=>{
+      if(err){return reject(err)}
+      return resolve(res)
+    })
+  })
+}
 module.exports = dataPool;
 
