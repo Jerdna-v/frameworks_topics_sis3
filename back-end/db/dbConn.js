@@ -64,12 +64,29 @@ dataPool.AddUser=(username,email,password)=>{
     })
   })
 }
+
+
+//
 dataPool.getAllUsers = () => {
   return new Promise((resolve, reject) => {
     conn.query('SELECT * FROM Users', (err, res) => {
       if (err) return reject(err);
       resolve(res);
     });
+  });
+};
+dataPool.AuthUser_ = (username) => {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      'SELECT username, phone_number, password FROM Users WHERE username = ?',
+      [username],
+      (err, res) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(res);
+      }
+    );
   });
 };
 
