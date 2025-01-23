@@ -7,6 +7,7 @@ import FilesUploadComponent from "./CustomComponents/FilesUpload";
 import axios from "axios";
 import { API_URL } from "./Utils/Configuration";
 import Cookies from "universal-cookie";
+const cookies = new Cookies();
 
 class App extends Component {
   constructor(props) {
