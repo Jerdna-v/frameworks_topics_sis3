@@ -21,49 +21,60 @@ class App extends Component {
       },
       user: null
     };
-    if (cookies.get('user_name') != null && this.state.user == null) {
-      this.state.CurrentPage = LOGIN
+  }
+  componentDidMount() {
+    // Check if a user is remembered in cookies
+    const rememberedUserName = cookies.get("user_name");
+    if (rememberedUserName) {
+      // Navigate to HomeView and set the user state
+      this.setState({
+        CurrentPage: HOME,
+        user: { user_name: rememberedUserName },
+      });
     }
-
   }
 
   QGetView(state) {
     const { CurrentPage } = state;
     switch (CurrentPage) {
       case SIGNUP:
-        return <SignupView />;
+        return <SignupView QSetView={this.QSetView}/>;
       case LOGIN:
-        return <LoginView QUserFromChild={this.QSetLoggedIn} />;
+        return <LoginView QUserFromChild={this.QSetLoggedIn} QSetView={this.QSetView}/>;
       case HOME:
-        return <HomeView user={this.state.user} QLogout={this.QHandleLogout} />;
+        return <HomeView user={this.state.user} QSetView={this.QSetView} QLogout={this.QPostLogout} />;
       case UPLOAD:
         return <FilesUploadComponent />;
       default:
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
     }
   }
+  // QPostLogout = () => {
+  //   let req = axios.create({
+  //     timeout: 20000,
+  //     withCredentials: true,
+  //   });
+
+  //   req
+  //     .get(`${API_URL}/users/logout`, {}, { withCredentials: true })
+  //     .then((response) => {
+  //       if (response.status === 200) {
+  //         console.log(response.data);
+  //         this.setState((this.state.status = response.data));
+  //         this.setState({ user: null, CurrentPage: LOGIN }); // Redirect to LoginView
+  //       } else {
+  //         console.log("Something is really wrong, DEBUG!");
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // };
   QPostLogout = () => {
-    let req = axios.create({
-      timeout: 20000,
-      withCredentials: true,
-    });
-
-    req
-      .get(`${API_URL}/users/logout`, {}, { withCredentials: true })
-      .then((response) => {
-        if (response.status === 200) {
-          console.log(response.data);
-          this.setState((this.state.status = response.data));
-          this.setState({ user: null, CurrentPage: LOGIN }); // Redirect to LoginView
-        } else {
-          console.log("Something is really wrong, DEBUG!");
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    cookies.remove("user_name", { path: "/" });
+    cookies.remove("user_password", { path: "/" });
+    this.setState({ user: null, CurrentPage: LOGIN });
   };
-
   QSetView = (obj) => {
     this.setState(this.state.status = { success: null, msg: "" })
 
@@ -74,8 +85,8 @@ class App extends Component {
     });
   };
   QSetLoggedIn = (obj) => {
-    this.setState(this.state.user = obj.user)
-  }
+    this.setState({ user: obj.user, CurrentPage: HOME });
+  };
 
   render() {
     return (
