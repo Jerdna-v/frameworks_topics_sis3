@@ -46,33 +46,40 @@ users.get('/session', async (req, res, next) => {
     }
 })
 
-//Inserts a new user in our database id field are complete
 users.post('/register', async (req, res, next) => {
     try {
-        const username = req.body.username
-        const password = req.body.password
-        const email = req.body.email
-        if (username && password && email) {
-            const queryResult = await DB.AddUser(username, email, password);
+        const { username, password, confirmPassword, name, phone } = req.body;
+
+        if (username && password && confirmPassword && name && phone) {
+            if (password !== confirmPassword) {
+                return res.status(400).send({ 
+                    status: { success: false, msg: "Passwords do not match" } 
+                });
+            }
+            const currentDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+            const queryResult = await DB.AddUser(username, password, name, phone, currentDateTime);
+            
             if (queryResult.affectedRows) {
                 res.statusCode = 200;
-                res.send({ status: { success: true, msg: "New user created" } })
-                console.log("New user added!!")
+                res.send({ status: { success: true, msg: "New user created" } });
+                console.log("New user added!!");
+            } else {
+                res.statusCode = 500;
+                res.send({ status: { success: false, msg: "Failed to add user" } });
             }
+        } else {
+            res.statusCode = 400;
+            res.send({ status: { success: false, msg: "Input element missing" } });
+            console.log("A field is missing!");
         }
-        else {
-            res.statusCode = 200;
-            res.send({ status: { success: false, msg: "Input element missing" } })
-            console.log("A field is missing!")
-        }
+
         res.end();
     } catch (err) {
-        console.log(err)
+        console.log(err);
         res.statusCode = 500;
-        res.send({ status: { success: false, msg: err } })
-        next()
+        res.send({ status: { success: false, msg: err.message } });
+        next();
     }
-
 });
-
 module.exports = users
