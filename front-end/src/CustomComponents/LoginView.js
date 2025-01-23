@@ -16,6 +16,8 @@ class LoginView extends React.Component {
         remember_me: false
       },
       user: null,
+      phone_number: "",
+      showForgotPopup: false,
       status: {
         success: null,
         msg: ""
@@ -103,7 +105,16 @@ class LoginView extends React.Component {
         console.log(err);
       });
   };
-
+handleForgotInfo = () => {
+  console.log(`Sending recovery info to: ${this.state.phone_number}`);
+  this.setState({
+    showForgotPopup: false,
+    status: {
+      success: true,
+      msg: `Recovery instructions sent to ${this.state.phone_number}`,
+    },
+  });
+};
   render() {
     return (
       <div
@@ -154,6 +165,7 @@ class LoginView extends React.Component {
             </label>
           </div>
         </form>
+        <div style={{ textAlign: "center" }}>
         <button
           style={{ margin: "10px" }}
           onClick={() => this.QPostLogin()}
@@ -161,6 +173,21 @@ class LoginView extends React.Component {
         >
           Sign
         </button>
+        <button
+            style={{ margin: "10px" }}
+            onClick={() => this.props.QSetView({ page: "signup" })}
+            className="btn btn-secondary"
+          >
+            Register
+          </button>
+          <button
+            style={{ margin: "10px" }}
+            onClick={() => this.setState({ showForgotPopup: true })}
+            className="btn btn-warning"
+          >
+            Forgot Login Info
+          </button>
+          </div>
 
         {/* Display success or error messages */}
         {this.state.status.success ? (
@@ -174,6 +201,47 @@ class LoginView extends React.Component {
             {this.state.status.msg}
           </p>
         ) : null}
+        {/* Forgot Login Info Popup */}
+        {this.state.showForgotPopup && (
+          <div
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "white",
+              border: "1px solid black",
+              padding: "20px",
+              zIndex: 1000,
+            }}
+          >
+            <h5>Forgot Login Info</h5>
+            <p>Enter your phone number to receive recovery instructions:</p>
+            <input
+              type="text"
+              className="form-control"
+              value={this.state.phone_number}
+              onChange={(e) =>
+                this.setState({ phone_number: e.target.value })
+              }
+              placeholder="Enter your phone number"
+            />
+            <button
+              className="btn btn-primary"
+              style={{ marginTop: "10px" }}
+              onClick={this.handleForgotInfo}
+            >
+              Submit
+            </button>
+            <button
+              className="btn btn-secondary"
+              style={{ marginTop: "10px", marginLeft: "10px" }}
+              onClick={() => this.setState({ showForgotPopup: false })}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -182,6 +250,7 @@ class LoginView extends React.Component {
 
 LoginView.propTypes = {
   QUserFromChild: PropTypes.func.isRequired,
+  QSetView: PropTypes.func.isRequired,
 };
 
 
