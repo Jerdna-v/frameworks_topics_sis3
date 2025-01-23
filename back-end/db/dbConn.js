@@ -172,7 +172,7 @@ dataPool.createTables = () => {
         username VARCHAR(100),
         password VARCHAR(255),
         name VARCHAR(100),
-        type ENUM('owner', 'worker'),
+        type ENUM('owner', 'worker') DEFAULT 'worker',
         phone_number VARCHAR(15),
         start_date DATE
       );

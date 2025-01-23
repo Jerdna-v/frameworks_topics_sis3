@@ -48,16 +48,17 @@ users.get('/session', async (req, res, next) => {
 
 users.post('/register', async (req, res, next) => {
     try {
-        const { username, password, confirmPassword, email, name, phone } = req.body;
+        const { username, password, confirmPassword, name, phone } = req.body;
 
-        if (username && password && confirmPassword && email && name && phone) {
+        if (username && password && confirmPassword && name && phone) {
             if (password !== confirmPassword) {
                 return res.status(400).send({ 
                     status: { success: false, msg: "Passwords do not match" } 
                 });
             }
+            const currentDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-            const queryResult = await DB.AddUser(username, email, password, name, phone);
+            const queryResult = await DB.AddUser(username, password, name, phone, currentDateTime);
             
             if (queryResult.affectedRows) {
                 res.statusCode = 200;
