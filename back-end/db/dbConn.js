@@ -64,7 +64,81 @@ dataPool.AddUser=(username,email,password)=>{
     })
   })
 }
+dataPool.getAllUsers = () => {
+  return new Promise((resolve, reject) => {
+    conn.query('SELECT * FROM Users', (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
 
+dataPool.addUser = (username, password, name, type, phoneNumber, startDate) => {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      'INSERT INTO Users (username, password, name, type, phone_number, start_date) VALUES (?,?,?,?,?,?)',
+      [username, password, name, type, phoneNumber, startDate],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve(res);
+      }
+    );
+  });
+};
+
+dataPool.updateUser = (uid, username, password, name, type, phoneNumber, startDate) => {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      'UPDATE Users SET username = ?, password = ?, name = ?, type = ?, phone_number = ?, start_date = ? WHERE uid = ?',
+      [username, password, name, type, phoneNumber, startDate, uid],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve(res);
+      }
+    );
+  });
+};
+
+dataPool.deleteUser = (uid) => {
+  return new Promise((resolve, reject) => {
+    conn.query('DELETE FROM Users WHERE uid = ?', uid, (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+// 4. CRUD operations for Notifications
+dataPool.getAllNotifications = () => {
+  return new Promise((resolve, reject) => {
+    conn.query('SELECT * FROM Notifications', (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.addNotification = (uid, muid, type, context) => {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      'INSERT INTO Notifications (uid, muid, type, context) VALUES (?,?,?,?)',
+      [uid, muid, type, context],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve(res);
+      }
+    );
+  });
+};
+
+dataPool.deleteNotification = (nuid) => {
+  return new Promise((resolve, reject) => {
+    conn.query('DELETE FROM Notifications WHERE nuid = ?', nuid, (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
 
 module.exports = dataPool;
 
