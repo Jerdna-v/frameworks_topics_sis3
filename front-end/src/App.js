@@ -25,6 +25,10 @@ class App extends Component {
       },
       user: null
     };
+    if (cookies.get('user_name') != null && this.state.user == null) {
+      this.state.CurrentPage = LOGIN
+    }
+
   }
 
   QGetView(state) {
@@ -50,6 +54,26 @@ class App extends Component {
         return <HomeView />;
     }
   };
+  QPostLogout = () => {
+    let req = axios.create({
+      timeout: 20000,
+      withCredentials: true,
+    });
+
+    req.get(API_URL + '/users/logout',
+      {}, { withCredentials: true }).then(response => {
+        if (response.status == 200) {
+          console.log(response.data)
+          this.setState(this.state.status = response.data)
+          this.setState(this.state.user = null)
+        } else {
+          console.log("Something is really wrong, DEBUG!")
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
 
   QSetView = (obj) => {
     this.setState(this.state.status = { success: null, msg: "" })
@@ -60,6 +84,9 @@ class App extends Component {
       Novica: obj.id || 0
     });
   };
+  QSetLoggedIn = (obj) => {
+    this.setState(this.state.user = obj.user)
+  }
 
   render() {
     return (
@@ -148,11 +175,23 @@ class App extends Component {
                     </a>
                   </li>
 
-                 <li className="nav-item" ><a onClick={this.QSetView.bind(this, { page: LOGIN })}
+                  {this.state.user != null
+                    ? <li className="nav-item"><a onClick={
+                      () => { this.QSetView({ page: LOGOUT }); this.QPostLogout(this); }
+                    } className="nav-link " href="#"> Logout </a>
+                    </li>
+                    : <li className="nav-item" ><a onClick={this.QSetView.bind(this, { page: LOGIN })}
                       className="nav-link " href="#"> Login </a>
-                 </li>
-                
+                    </li>}
                 </ul>
+
+
+                {this.state.user != null
+                  ? <ul className="navbar-nav me-auto mb-2 mb-lg-0 pull-right" >
+                    <li className="nav-item"> <a className="nav-link">Welcome {this.state.user.user_name}</a></li>
+                  </ul>
+                  : null}
+
               </div>
             </div>
           </nav>
@@ -160,7 +199,11 @@ class App extends Component {
 
         <div id="viewer" className="row container">
           {this.QGetView(this.state)}
+          {this.state.status.success ?
+            <p className="alert alert-success"
+              role="alert">{this.state.status.msg}</p> : null}
         </div>
+
       </div>
     );
   }
