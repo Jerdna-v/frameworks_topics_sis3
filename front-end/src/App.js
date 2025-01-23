@@ -38,9 +38,9 @@ class App extends Component {
     const { CurrentPage } = state;
     switch (CurrentPage) {
       case SIGNUP:
-        return <SignupView />;
+        return <SignupView QSetView={this.QSetView}/>;
       case LOGIN:
-        return <LoginView QUserFromChild={this.QSetLoggedIn} />;
+        return <LoginView QUserFromChild={this.QSetLoggedIn} QSetView={this.QSetView}/>;
       case HOME:
         return <HomeView user={this.state.user} QSetView={this.QSetView} QLogout={this.QPostLogout} />;
       case UPLOAD:
