@@ -1,9 +1,10 @@
 import { Component } from "react";
-import { SIGNUP, LOGIN, HOME, UPLOAD } from "./Utils/Constants";
+import { SIGNUP, LOGIN, HOME, UPLOAD, MACHINES } from "./Utils/Constants";
 import HomeView from "./CustomComponents/HomeView";
 import SignupView from "./CustomComponents/SignupView";
 import LoginView from "./CustomComponents/LoginView";
 import FilesUploadComponent from "./CustomComponents/FilesUpload";
+import MachineView from "./CustomComponents/MachineView";
 import axios from "axios";
 import { API_URL } from "./Utils/Configuration";
 import Cookies from "universal-cookie";
@@ -45,6 +46,9 @@ class App extends Component {
         return <HomeView user={this.state.user} QSetView={this.QSetView} QLogout={this.QPostLogout} />;
       case UPLOAD:
         return <FilesUploadComponent />;
+      case MACHINES:
+        return <MachineView QSetView={this.QSetView} />;
+
       default:
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
     }

@@ -89,7 +89,7 @@ dataPool.AuthUser_ = (username) => {
   });
 };
 
-dataPool.addUser = (username, password, name, type, phoneNumber, startDate) => {
+dataPool.addUser = (username, password, name, phoneNumber, startDate) => {
   return new Promise((resolve, reject) => {
     conn.query(
       'INSERT INTO Users (username, password, name, type, phone_number, start_date) VALUES (?,?,?,?,?,?)',

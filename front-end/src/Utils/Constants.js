@@ -7,4 +7,5 @@ export const NOVICA = 'novica';
 export const HOME = 'home';
 export const UPLOAD = 'upload';
 export const LOGOUT = 'logout';
+export const MACHINES = 'machines';
 

@@ -9,7 +9,7 @@ class HomeView extends React.Component {
           { id: 1, label: "Option 1", onClick: () => console.log("Option 1 clicked") },
           { id: 2, label: "Option 2", onClick: () => console.log("Option 2 clicked") },
           { id: 3, label: "Data Upload", onClick: () => this.props.QSetView({ page: "upload" }) },
-          { id: 4, label: "Option 4", onClick: () => console.log("Option 4 clicked") },
+          { id: 4, label: "Machines", onClick: () => this.props.QSetView({ page: "machines" }) }, // New Machines Button
           { id: 5, label: "Option 5", onClick: () => console.log("Option 5 clicked") },
           { id: 6, label: "Option 6", onClick: () => console.log("Option 6 clicked") },
           { id: 7, label: "Option 7", onClick: () => console.log("Option 7 clicked") },
@@ -69,5 +69,6 @@ class HomeView extends React.Component {
     QSetView: PropTypes.func.isRequired,
     user: PropTypes.object,
   };
+
 
 export default HomeView
