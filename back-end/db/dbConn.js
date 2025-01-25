@@ -32,8 +32,23 @@ dataPool.getAllUsers = () => {
 dataPool.AuthUser = (username) => {
   return new Promise((resolve, reject) => {
     conn.query(
-      'SELECT username, phone_number, password FROM Users WHERE username = ?',
+      'SELECT password FROM Users WHERE username = ?',
       [username],
+      (err, res) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(res);
+      }
+    );
+  });
+};
+
+dataPool.AuthNumber = (phone) => {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      'SELECT username, phone_number, password FROM Users WHERE phone_number = ?',
+      [phone],
       (err, res) => {
         if (err) {
           return reject(err);
@@ -47,8 +62,8 @@ dataPool.AuthUser = (username) => {
 dataPool.addUser = (username, password, name, phoneNumber, startDate) => {
   return new Promise((resolve, reject) => {
     conn.query(
-      'INSERT INTO Users (username, password, name, type, phone_number, start_date) VALUES (?,?,?,?,?,?)',
-      [username, password, name, type, phoneNumber, startDate],
+      'INSERT INTO Users (username, password, name, phone_number, start_date) VALUES (?,?,?,?,?)',
+      [username, password, name, phoneNumber, startDate],
       (err, res) => {
         if (err) return reject(err);
         resolve(res);

@@ -32,27 +32,35 @@ class SignupView extends React.Component {
   QPostSignup = () => {
     const { name, username, phone, password, confirm_password } =
       this.state.user_input;
-      if (!name || !username || !phone || !password || !confirm_password) {
+      if (!username || !password || !confirm_password || !name || !phone) {
+        this.setState({
+          status: { success: false, msg: "A field is missing!" },
+        });
+        return;
+      }
+    if (String(password) !== String(confirm_password)) {
       this.setState({
-        status: { success: false, msg: "All fields are required." },
+        status: { success: false, msg: "Passwords do not match!" },
       });
       return;
     }
-
+    console.log()
     axios.post(API_URL + '/users/register', {
       username,
       password,
-      confirm_password,
       name,
       phone, 
     })
       .then(response => {
         /// TODO: You should indicate if the element was added, or if not show the error
-        this.setState(this.state.status = response.data)
+        this.setState({status: response.data.status})
         console.log("Sent to server...")
       })
       .catch(err => {
         console.log(err)
+        this.setState({
+          status: { success: false, msg: "Something went wrong. Please try again." },
+      });
       })
   }
 
