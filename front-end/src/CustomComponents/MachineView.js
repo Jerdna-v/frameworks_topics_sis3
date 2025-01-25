@@ -11,15 +11,22 @@ class MachineView extends React.Component {
       filterText: "",
       filterType: "",
       filterLocation: "",
-      sortKey: "name", // Default sort key
-      sortOrder: "asc", // Sort order: asc or desc
+      sortKey: "name",
+      sortOrder: "asc", 
       showAddMachinePopup: false,
       showFilterPopup: false,
       newMachine: {
+        mid: "",
+        name: "",
+        type: "astra",
+        location: "",
+        store: false,
+        startDate: "",
+      },
+      filters: {
         name: "",
         type: "",
         location: "",
-        startDate: "",
       },
     };
   }
@@ -30,7 +37,7 @@ class MachineView extends React.Component {
 
   componentDidMount() {
     axios
-      .get(API_URL + "/machines") // Assuming `/machines` is the endpoint
+      .get(API_URL + "/machines")
       .then((response) => {
         console.log(response.data);
         this.setState({
@@ -41,6 +48,14 @@ class MachineView extends React.Component {
         console.error(err);
       });
   }
+
+  toggleAddMachinePopup = () => {
+    this.setState({ showAddMachinePopup: !this.state.showAddMachinePopup });
+  };
+
+  toggleFilterPopup = () => {
+    this.setState({ showFilterPopup: !this.state.showFilterPopup });
+  };
 
   handleFilterChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
@@ -61,264 +76,231 @@ class MachineView extends React.Component {
   };
 
   handleAddMachineChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const fieldValue = type === "checkbox" ? checked : value;
     this.setState({
-      newMachine: {
-        ...this.state.newMachine,
-        [e.target.name]: e.target.value,
-      },
-    });
-  };
+        newMachine: {
+          ...this.state.newMachine,
+          [name]: fieldValue,
+          ...(name === "store" && { location: fieldValue ? "" : this.state.newMachine.location }),
+        },
+      });
+    };
 
   handleAddMachineSubmit = () => {
     const { newMachine } = this.state;
+
     axios
       .post(API_URL + "/machines", newMachine)
       .then((response) => {
-        console.log("Machine added:", response.data);
         this.setState({
           machines: [...this.state.machines, response.data],
           showAddMachinePopup: false,
-          newMachine: { name: "", type: "", location: "", startDate: "" },
+          newMachine: {
+            mid: "",
+            name: "",
+            type: "astra",
+            location: "",
+            store: false,
+            startDate: "",
+          },
         });
       })
       .catch((err) => console.error(err));
   };
 
+  handleFilterChange = (e) => {
+    this.setState({
+      filters: { ...this.state.filters, [e.target.name]: e.target.value },
+    });
+  };
+
+  handleSortChange = (e) => {
+    this.setState({ sortKey: e.target.value });
+  };
+
+  handleSortOrderToggle = () => {
+    this.setState({ sortOrder: this.state.sortOrder === "asc" ? "desc" : "asc" });
+  };
+
   render() {
     const {
       machines,
-      filterText,
-      filterType,
-      filterLocation,
       sortKey,
       sortOrder,
       showAddMachinePopup,
       showFilterPopup,
       newMachine,
+      filters,
     } = this.state;
 
-    // Apply filters
-    const filteredMachines = machines
-      .filter((machine) =>
-        machine.name.toLowerCase().includes(filterText.toLowerCase())
-      )
-      .filter(
-        (machine) =>
-          !filterType || machine.type.toLowerCase() === filterType.toLowerCase()
-      )
-      .filter(
-        (machine) =>
-          !filterLocation ||
-          machine.location.toLowerCase() === filterLocation.toLowerCase()
-      );
-
+    const filteredMachines = machines.filter((machine) => {
+        return (
+          (!filters.name || machine.name.toLowerCase().includes(filters.name.toLowerCase())) &&
+          (!filters.type || machine.type.toLowerCase() === filters.type.toLowerCase()) && 
+          (!filters.location || machine.location.toLowerCase().includes(filters.location.toLowerCase()))
+        );
+      });
     // Apply sort
     const sortedMachines = [...filteredMachines].sort((a, b) => {
-      const comparison =
-        a[sortKey] > b[sortKey]
-          ? 1
-          : a[sortKey] < b[sortKey]
-          ? -1
-          : 0;
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+        const comparison = a[sortKey] > b[sortKey] ? 1 : a[sortKey] < b[sortKey] ? -1 : 0; // ADDED
+        return sortOrder === "asc" ? comparison : -comparison; // ADDED
+      });
 
-    return (
-      <div className="container" style={{ marginTop: "10px" }}>
-        <div className="row">
-          {/* Machines List - Left Column */}
-          <div className="col-md-8">
-            <div className="row row-cols-1 row-cols-md-2 g-4">
-              {sortedMachines.length > 0 ? (
-                sortedMachines.map((machine) => (
-                  <div className="col" key={machine.id}>
-                    <div className="card">
-                      <div className="card-body">
-                        <h5 className="card-title">{machine.name}</h5>
-                        <p className="card-text">
-                          Type: {machine.type} <br />
-                          Location: {machine.location} <br />
-                          Start Date: {machine.startDate}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p style={{ margin: "10px" }}>No machines found...</p>
-              )}
-            </div>
-          </div>
-
-          {/* Options - Right Column */}
-          <div className="col-md-4">
-            <div className="card" style={{ padding: "10px" }}>
-              <h4>Options</h4>
-              {/* Sort Button */}
-              <button
-                className="btn btn-secondary"
-                style={{ marginBottom: "10px" }}
-                onClick={this.handleSort}
-              >
-                Sort by {sortKey} {sortOrder === "asc" ? "↑" : "↓"}
+      return (
+        <div className="container" style={{ marginTop: "10px" }}>
+          {/* Buttons */}
+          <div className="row" style={{ marginBottom: "10px" }}>
+            <div className="col-md-12 d-flex justify-content-between">
+              <button className="btn btn-primary" onClick={this.toggleAddMachinePopup}>
+                Add Machine
               </button>
-
-              {/* Buttons */}
+              <button className="btn btn-secondary" onClick={this.toggleFilterPopup}>
+                Filter
+              </button>
               <div>
-                <button
-                  className="btn btn-primary"
-                  style={{ margin: "5px" }}
-                  onClick={this.toggleAddMachinePopup}
+                <select
+                  className="form-select d-inline"
+                  style={{ width: "150px", display: "inline" }}
+                  value={sortKey}
+                  onChange={this.handleSortChange} // ADDED
                 >
-                  Add Machine
-                </button>
-                <button
-                  className="btn btn-primary"
-                  style={{ margin: "5px" }}
-                  onClick={this.toggleFilterPopup}
-                >
-                  Filter
-                </button>
-                <button
-                  className="btn btn-primary"
-                  style={{ margin: "5px" }}
-                  onClick={() => this.QSetViewInParent({ page: "compare" })}
-                >
-                  Compare
+                  <option value="mid">Machine ID</option>
+                  <option value="name">Name</option>
+                  <option value="startDate">Start Date</option>
+                </select>
+                <button className="btn btn-secondary d-inline" onClick={this.handleSortOrderToggle}>
+                  {sortOrder === "asc" ? "↑" : "↓"} {/* ADDED */}
                 </button>
               </div>
             </div>
           </div>
+  
+          {/* Machine List */}
+          <div className="row row-cols-1 row-cols-md-2 g-4">
+            {sortedMachines.length > 0 ? (
+              sortedMachines.map((machine) => (
+                <div className="col" key={machine.mid}>
+                  <div className="card">
+                    <div className="card-body">
+                      <h5 className="card-title">{machine.name}</h5>
+                      <p className="card-text">
+                        Type: {machine.type} <br />
+                        Location: {machine.location || "Store"} <br /> {/* CHANGED */}
+                        Start Date: {machine.startDate}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No machines found...</p>
+            )}
+          </div>
+  
+          {/* Add Machine Popup */}
+          {showAddMachinePopup && (
+            <div className="popup">
+              <h5>Add Machine</h5>
+              <input
+                type="text"
+                name="mid"
+                placeholder="Machine ID (optional)" // ADDED
+                value={newMachine.mid} // ADDED
+                onChange={this.handleAddMachineChange} // ADDED
+                className="form-control"
+              />
+              <input
+                type="text"
+                name="name"
+                placeholder="Name"
+                value={newMachine.name}
+                onChange={this.handleAddMachineChange}
+                className="form-control"
+              />
+              <div>
+                <input
+                  type="checkbox"
+                  name="store"
+                  checked={newMachine.store} // ADDED
+                  onChange={this.handleAddMachineChange} // ADDED
+                />
+                <label>Store</label>
+              </div>
+              {!newMachine.store && (
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Location"
+                  value={newMachine.location} // ADDED
+                  onChange={this.handleAddMachineChange} // ADDED
+                  className="form-control"
+                />
+              )}
+              <select
+                name="type"
+                value={newMachine.type}
+                onChange={this.handleAddMachineChange} // ADDED
+                className="form-select"
+              >
+                <option value="astra">Astra</option> {/* CHANGED */}
+              </select>
+              <input
+                type="date"
+                name="startDate"
+                value={newMachine.startDate}
+                onChange={this.handleAddMachineChange} // ADDED
+                className="form-control"
+              />
+              <button className="btn btn-primary" onClick={this.handleAddMachineSubmit}>
+                Submit
+              </button>
+              <button className="btn btn-secondary" onClick={this.toggleAddMachinePopup}>
+                Cancel
+              </button>
+            </div>
+          )}
+  
+          {/* Filter Popup */}
+          {showFilterPopup && (
+            <div className="popup">
+              <h5>Filter Machines</h5>
+              <input
+                type="text"
+                name="name"
+                placeholder="Filter by name" // ADDED
+                value={filters.name} // ADDED
+                onChange={this.handleFilterChange} // ADDED
+                className="form-control"
+              />
+              <input
+                type="text"
+                name="type"
+                placeholder="Filter by type" // ADDED
+                value={filters.type} // ADDED
+                onChange={this.handleFilterChange} // ADDED
+                className="form-control"
+              />
+              <input
+                type="text"
+                name="location"
+                placeholder="Filter by location" // ADDED
+                value={filters.location} // ADDED
+                onChange={this.handleFilterChange} // ADDED
+                className="form-control"
+              />
+              <button className="btn btn-primary" onClick={this.toggleFilterPopup}>
+                Apply
+              </button>
+              <button className="btn btn-secondary" onClick={this.toggleFilterPopup}>
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
-
-        {/* Add Machine Popup */}
-        {showAddMachinePopup && (
-          <div
-            style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              backgroundColor: "white",
-              border: "1px solid black",
-              padding: "20px",
-              zIndex: 1000,
-            }}
-          >
-            <h5>Add Machine</h5>
-            <input
-              type="text"
-              name="name"
-              placeholder="Name"
-              value={newMachine.name}
-              onChange={this.handleAddMachineChange}
-              className="form-control"
-              style={{ marginBottom: "10px" }}
-            />
-            <input
-              type="text"
-              name="type"
-              placeholder="Type"
-              value={newMachine.type}
-              onChange={this.handleAddMachineChange}
-              className="form-control"
-              style={{ marginBottom: "10px" }}
-            />
-            <input
-              type="text"
-              name="location"
-              placeholder="Location"
-              value={newMachine.location}
-              onChange={this.handleAddMachineChange}
-              className="form-control"
-              style={{ marginBottom: "10px" }}
-            />
-            <input
-              type="date"
-              name="startDate"
-              placeholder="Start Date"
-              value={newMachine.startDate}
-              onChange={this.handleAddMachineChange}
-              className="form-control"
-              style={{ marginBottom: "10px" }}
-            />
-            <button
-              className="btn btn-primary"
-              onClick={this.handleAddMachineSubmit}
-              style={{ marginRight: "10px" }}
-            >
-              Submit
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={this.toggleAddMachinePopup}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-
-        {/* Filter Popup */}
-        {showFilterPopup && (
-          <div
-            style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              backgroundColor: "white",
-              border: "1px solid black",
-              padding: "20px",
-              zIndex: 1000,
-            }}
-          >
-            <h5>Filter Machines</h5>
-            <input
-              type="text"
-              name="filterText"
-              placeholder="Filter by name"
-              value={filterText}
-              onChange={this.handleFilterChange}
-              className="form-control"
-              style={{ marginBottom: "10px" }}
-            />
-            <input
-              type="text"
-              name="filterType"
-              placeholder="Filter by type"
-              value={filterType}
-              onChange={this.handleFilterChange}
-              className="form-control"
-              style={{ marginBottom: "10px" }}
-            />
-            <input
-              type="text"
-              name="filterLocation"
-              placeholder="Filter by location"
-              value={filterLocation}
-              onChange={this.handleFilterChange}
-              className="form-control"
-              style={{ marginBottom: "10px" }}
-            />
-            <button
-              className="btn btn-primary"
-              onClick={this.toggleFilterPopup}
-              style={{ marginRight: "10px" }}
-            >
-              Apply
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={this.toggleFilterPopup}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
-    );
+      );
+    }
   }
-}
 
 MachineView.propTypes = {
   QSetView: PropTypes.func.isRequired,
