@@ -41,6 +41,17 @@ let sess = {
 
 app.use(session(sess))
 
+const DB = require('./db/dbConn.js')
+
+DB.createTables()
+  .then((msg) => {
+    console.log(msg);
+  })
+  .catch((err) => {
+    console.error("Error creating tables:", err);
+  });
+
+
 //Some configurations
 app.use(express.urlencoded({extended : true}));
 app.use(cors({
@@ -51,11 +62,11 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const novice = require('./routes/novice')
+const machines = require('./routes/machines')
 const users = require('./routes/users')
 const upload = require('./routes/upload')
 
-app.use('/novice', novice)
+app.use('/machines', machines)
 app.use('/users', users)
 app.use('/uploadFile', upload)
 

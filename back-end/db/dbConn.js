@@ -4,7 +4,7 @@ const conn = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS, 
-    database: 'Qcodeigniter',
+    database: process.env.DB_DATABASE,
   })
 
  conn.connect((err) => {
@@ -18,52 +18,7 @@ const conn = mysql.createConnection({
 
     let dataPool={}
   
-dataPool.allNovice=()=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`SELECT * FROM news`, (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
 
-dataPool.oneNovica=(id)=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`SELECT * FROM news WHERE id = ?`, id, (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
-
-dataPool.creteNovica=(title,slug,text,file)=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`INSERT INTO news (title,slug,text, file) VALUES (?,?,?,?)`, [title, slug, text, file], (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
-
-dataPool.AuthUser=(username)=>
-{
-  return new Promise ((resolve, reject)=>{
-    conn.query('SELECT * FROM user_login WHERE user_name = ?', username, (err,res, fields)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })  
-	
-}
-
-dataPool.AddUser=(username,email,password)=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`INSERT INTO user_login (user_name,user_email,user_password) VALUES (?,?,?)`, [username, email, password], (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
 
 dataPool.getAllUsers = () => {
   return new Promise((resolve, reject) => {
@@ -74,7 +29,7 @@ dataPool.getAllUsers = () => {
   });
 };
 
-dataPool.AuthUser_ = (username) => {
+dataPool.AuthUser = (username) => {
   return new Promise((resolve, reject) => {
     conn.query(
       'SELECT username, phone_number, password FROM Users WHERE username = ?',
@@ -157,15 +112,7 @@ dataPool.deleteNotification = (nuid) => {
 
 dataPool.createTables = () => {
   return new Promise((resolve, reject) => {
-    const createMachinesTable = `
-      CREATE TABLE IF NOT EXISTS Machines (
-        mid INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100),
-        type VARCHAR(100),
-        location VARCHAR(255),
-        start_date DATE
-      );
-    `;
+    const createMachinesTable = `CREATE TABLE IF NOT EXISTS Machines (mid INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100),type VARCHAR(100),location VARCHAR(255), start_date DATE);`;
     const createUsersTable = `
       CREATE TABLE IF NOT EXISTS Users (
         uid INT AUTO_INCREMENT PRIMARY KEY,
@@ -173,10 +120,7 @@ dataPool.createTables = () => {
         password VARCHAR(255),
         name VARCHAR(100),
         type ENUM('owner', 'worker') DEFAULT 'worker',
-        phone_number VARCHAR(15),
-        start_date DATE
-      );
-    `;
+        phone_number VARCHAR(15), start_date DATE);`;
     const createNotificationsTable = `
       CREATE TABLE IF NOT EXISTS Notifications (
         nuid INT AUTO_INCREMENT PRIMARY KEY,
@@ -188,16 +132,18 @@ dataPool.createTables = () => {
         FOREIGN KEY (muid) REFERENCES Machines(mid)
       );
     `;
-    conn.query(
-      createMachinesTable + createUsersTable + createNotificationsTable,
-      (err, res) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(res);
-      }
-    );
+ // Execute each query separately
+ conn.query(createMachinesTable, (err) => {
+  if (err) return reject(err);
+  conn.query(createUsersTable, (err) => {
+    if (err) return reject(err);
+    conn.query(createNotificationsTable, (err) => {
+      if (err) return reject(err);
+      resolve("All tables created successfully or already exist.");
+    });
   });
+});
+});
 };
 
 
@@ -253,5 +199,52 @@ dataPool.oneMachine=(mid)=>{
     })
   })
 }
+
+// dataPool.allNovice=()=>{
+//   return new Promise ((resolve, reject)=>{
+//     conn.query(`SELECT * FROM news`, (err,res)=>{
+//       if(err){return reject(err)}
+//       return resolve(res)
+//     })
+//   })
+// }
+
+// dataPool.oneNovica=(id)=>{
+//   return new Promise ((resolve, reject)=>{
+//     conn.query(`SELECT * FROM news WHERE id = ?`, id, (err,res)=>{
+//       if(err){return reject(err)}
+//       return resolve(res)
+//     })
+//   })
+// }
+
+// dataPool.creteNovica=(title,slug,text,file)=>{
+//   return new Promise ((resolve, reject)=>{
+//     conn.query(`INSERT INTO news (title,slug,text, file) VALUES (?,?,?,?)`, [title, slug, text, file], (err,res)=>{
+//       if(err){return reject(err)}
+//       return resolve(res)
+//     })
+//   })
+// }
+
+// dataPool.AuthUser=(username)=>
+// {
+//   return new Promise ((resolve, reject)=>{
+//     conn.query('SELECT * FROM user_login WHERE user_name = ?', username, (err,res, fields)=>{
+//       if(err){return reject(err)}
+//       return resolve(res)
+//     })
+//   })  
+	
+// }
+
+// dataPool.AddUser=(username,email,password)=>{
+//   return new Promise ((resolve, reject)=>{
+//     conn.query(`INSERT INTO user_login (user_name,user_email,user_password) VALUES (?,?,?)`, [username, email, password], (err,res)=>{
+//       if(err){return reject(err)}
+//       return resolve(res)
+//     })
+//   })
+// }
 module.exports = dataPool;
 
