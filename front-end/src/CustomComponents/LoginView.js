@@ -26,23 +26,24 @@ class LoginView extends React.Component {
   }
 
   componentDidMount = () => {
-    if (cookies.get('user_name') != null && this.state.user == null) {
-      this.state.user_input.username = String(cookies.get('user_name'))
-      this.state.user_input.password = String(cookies.get('user_password'))
-      this.setState(this.state.user_input = this.state.user_input)
-      this.QPostLogin()
+    const username = cookies.get('user_name');
+    const password = cookies.get('user_password');
+  
+    if (username && password) {
+      this.setState(
+        { 
+          user_input: { ...this.state.user_input, username, password } 
+        },
+        () => {
+          this.QPostLogin();
+        }
+      );
+    } else {
+      // Ensure user_input remains empty if cookies are not set
+      this.setState({
+        user_input: { username: "", password: "", remember_me: false },
+      });
     }
-  }
-
-  QGetTextFromField(e) {
-    this.state.user_input[e.target.name] = e.target.value;
-    this.setState({ user_input: this.state.user_input });
-  }
-
-  QGetRememberMe(e) {
-    this.state.user_input.remember_me = !this.state.user_input.remember_me;
-    this.setState({ user_input: this.state.user_input });
-    console.log(this.state)
   }
 
   QPostLogin = () => {
@@ -75,7 +76,7 @@ class LoginView extends React.Component {
         console.log("Sent to server...");
         console.log(this.state.user_input);
         console.log(response.status);
-        if (response.status === 200) {
+        if (response.status === 200 && response.data.status.success) {
           console.log(response.data);
           this.setState((this.state.status = response.data.status));
           this.setState((this.state.user = response.data.user));
@@ -98,7 +99,13 @@ class LoginView extends React.Component {
             this.props.QUserFromChild(this.state);
           }
         } else {
-          console.log("Something is really wrong, DEBUG!");
+          console.log("Invalid credentials, clearing cookies.");
+          cookies.remove("user_name", { path: "/" });
+          cookies.remove("user_password", { path: "/" });
+          this.setState({
+            status: { success: false, msg: "Invalid username or password." },
+            user_input: { ...this.state.user_input, password: "" },
+          });
         }
       })
       .catch((err) => {

@@ -57,7 +57,7 @@ machines.post('/', upload_dest.single('file'), async (req, res, next) => {
             file = req.file.filename
 
         const isCompleteMachine = name && type && (location || req.body.store);
-        if (isAcompleteNovica) {
+        if (isCompleteMachine) {
             const queryResult = await DB.addMachine(mid, name, type, location || "Store", startDate);
             if (queryResult.affectedRows) {
                 console.log("New article added!!")
