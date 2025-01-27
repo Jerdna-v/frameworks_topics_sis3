@@ -50,7 +50,14 @@ DB.createTables()
   .catch((err) => {
     console.error("Error creating tables:", err);
   });
-
+  DB.createRTables()
+  .then((msg) => {
+    console.log(msg);
+  })
+  .catch((err) => {
+    console.error("Error creating tables:", err);
+  });
+  
 
 //Some configurations
 app.use(express.urlencoded({extended : true}));

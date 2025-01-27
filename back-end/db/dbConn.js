@@ -32,7 +32,7 @@ dataPool.getAllUsers = () => {
 dataPool.AuthUser = (username) => {
   return new Promise((resolve, reject) => {
     conn.query(
-      'SELECT password FROM Users WHERE username = ?',
+      'SELECT username, password FROM Users WHERE username = ?',
       [username],
       (err, res) => {
         if (err) {
@@ -215,6 +215,232 @@ dataPool.oneMachine=(mid)=>{
   })
 }
 
+dataPool.createRTables = () => {
+  return new Promise((resolve, reject) => {
+      const createReportsTable = `
+      CREATE TABLE IF NOT EXISTS Reports (
+          rid INT AUTO_INCREMENT PRIMARY KEY,
+          mid INT NOT NULL,
+          total_count INT DEFAULT 0,
+          total_sel_norm INT DEFAULT 0,
+          total_sel_maint INT DEFAULT 0,
+          total_sel_total INT DEFAULT 0,
+          FOREIGN KEY (mid) REFERENCES Machines(mid)
+      );`;
+
+      const createSelectionsTable = `
+      CREATE TABLE IF NOT EXISTS Selections (
+          rid INT NOT NULL,
+          mid INT NOT NULL,
+          selection_1 INT DEFAULT 0,
+          selection_2 INT DEFAULT 0,
+          selection_3 INT DEFAULT 0,
+          selection_4 INT DEFAULT 0,
+          selection_5 INT DEFAULT 0,
+          selection_6 INT DEFAULT 0,
+          selection_7 INT DEFAULT 0,
+          selection_8 INT DEFAULT 0,
+          selection_9 INT DEFAULT 0,
+          selection_10 INT DEFAULT 0,
+          selection_11 INT DEFAULT 0,
+          selection_12 INT DEFAULT 0,
+          selection_13 INT DEFAULT 0,
+          selection_14 INT DEFAULT 0,
+          selection_15 INT DEFAULT 0,
+          selection_16 INT DEFAULT 0,
+          selection_17 INT DEFAULT 0,
+          selection_18 INT DEFAULT 0,
+          selection_19 INT DEFAULT 0,
+          selection_20 INT DEFAULT 0,
+          selection_21 INT DEFAULT 0,
+          selection_22 INT DEFAULT 0,
+          selection_23 INT DEFAULT 0,
+          selection_24 INT DEFAULT 0,
+          selection_25 INT DEFAULT 0,
+          selection_26 INT DEFAULT 0,
+          selection_27 INT DEFAULT 0,
+          selection_28 INT DEFAULT 0,
+          selection_29 INT DEFAULT 0,
+          selection_30 INT DEFAULT 0,
+          selection_31 INT DEFAULT 0,
+          selection_32 INT DEFAULT 0,
+          selection_33 INT DEFAULT 0,
+          selection_34 INT DEFAULT 0,
+          selection_35 INT DEFAULT 0,
+          selection_36 INT DEFAULT 0,
+          selection_37 INT DEFAULT 0,
+          selection_38 INT DEFAULT 0,
+          selection_39 INT DEFAULT 0,
+          selection_40 INT DEFAULT 0,
+          PRIMARY KEY (rid),
+          FOREIGN KEY (rid) REFERENCES Reports(rid),
+          FOREIGN KEY (mid) REFERENCES Machines(mid)
+      );`;
+
+      const createPriceBandsTable = `
+      CREATE TABLE IF NOT EXISTS PriceBands (
+          rid INT NOT NULL,
+          mid INT NOT NULL,
+          band_0 INT DEFAULT 0,
+          band_1 INT DEFAULT 0,
+          band_2 INT DEFAULT 0,
+          band_3 INT DEFAULT 0,
+          band_4 INT DEFAULT 0,
+          band_5 INT DEFAULT 0,
+          band_6 INT DEFAULT 0,
+          band_7 INT DEFAULT 0,
+          band_8 INT DEFAULT 0,
+          PRIMARY KEY (rid),
+          FOREIGN KEY (rid) REFERENCES Reports(rid),
+          FOREIGN KEY (mid) REFERENCES Machines(mid)
+      );`;
+
+      const createFailuresTable = `
+      CREATE TABLE IF NOT EXISTS Failures (
+          rid INT NOT NULL,
+          mid INT NOT NULL,
+          failure_1 INT DEFAULT 0,
+          failure_2 INT DEFAULT 0,
+          failure_3 INT DEFAULT 0,
+          failure_4 INT DEFAULT 0,
+          failure_5 INT DEFAULT 0,
+          failure_6 INT DEFAULT 0,
+          failure_7 INT DEFAULT 0,
+          failure_8 INT DEFAULT 0,
+          failure_9 INT DEFAULT 0,
+          failure_10 INT DEFAULT 0,
+          failure_11 INT DEFAULT 0,
+          failure_12 INT DEFAULT 0,
+          failure_13 INT DEFAULT 0,
+          failure_14 INT DEFAULT 0,
+          failure_15 INT DEFAULT 0,
+          failure_16 INT DEFAULT 0,
+          failure_17 INT DEFAULT 0,
+          failure_18 INT DEFAULT 0,
+          failure_19 INT DEFAULT 0,
+          failure_20 INT DEFAULT 0,
+          failure_21 INT DEFAULT 0,
+          failure_22 INT DEFAULT 0,
+          failure_23 INT DEFAULT 0,
+          failure_24 INT DEFAULT 0,
+          failure_25 INT DEFAULT 0,
+          failure_26 INT DEFAULT 0,
+          failure_27 INT DEFAULT 0,
+          failure_28 INT DEFAULT 0,
+          failure_29 INT DEFAULT 0,
+          failure_30 INT DEFAULT 0,
+          failure_31 INT DEFAULT 0,
+          failure_32 INT DEFAULT 0,
+          failure_33 INT DEFAULT 0,
+          failure_34 INT DEFAULT 0,
+          failure_35 INT DEFAULT 0,
+          failure_36 INT DEFAULT 0,
+          failure_37 INT DEFAULT 0,
+          failure_38 INT DEFAULT 0,
+          failure_39 INT DEFAULT 0,
+          failure_40 INT DEFAULT 0,
+          failure_41 INT DEFAULT 0,
+          PRIMARY KEY (rid),
+          FOREIGN KEY (rid) REFERENCES Reports(rid),
+          FOREIGN KEY (mid) REFERENCES Machines(mid)
+      );`;
+
+      const createCoinMechDataTable = `
+      CREATE TABLE IF NOT EXISTS CoinMechData (
+          rid INT NOT NULL,
+          mid INT NOT NULL,
+          coin_1 INT DEFAULT 0,
+          coin_2 INT DEFAULT 0,
+          coin_3 INT DEFAULT 0,
+          coin_4 INT DEFAULT 0,
+          coin_5 INT DEFAULT 0,
+          coin_6 INT DEFAULT 0,
+          total_cash INT DEFAULT 0,
+          total_sales INT DEFAULT 0,
+          total_cash_credit INT DEFAULT 0,
+          PRIMARY KEY (rid),
+          FOREIGN KEY (rid) REFERENCES Reports(rid),
+          FOREIGN KEY (mid) REFERENCES Machines(mid)
+      );`;
+
+      // Execute queries sequentially
+    conn.query(createReportsTable, (err) => {
+      if (err) return reject(err);
+      conn.query(createSelectionsTable, (err) => {
+        if (err) return reject(err);
+        conn.query(createPriceBandsTable, (err) => {
+          if (err) return reject(err);
+          conn.query(createFailuresTable, (err) => {
+            if (err) return reject(err);
+            conn.query(createCoinMechDataTable, (err) => {
+              if (err) return reject(err);
+              resolve("All tables created successfully or already exist.");
+            });
+          });
+        });
+      });
+    });
+  });
+};
+
+
+dataPool.insertReport = (reportData) => {
+  return new Promise((resolve, reject) => {
+      const query = `INSERT INTO Reports (mid, total_count, total_sel_norm, total_sel_maint, total_sel_total) VALUES (?, ?, ?, ?, ?)`;
+      conn.query(query, [reportData.mid, reportData.total_count, reportData.total_sel_norm, reportData.total_sel_maint, reportData.total_sel_total], (err, res) => {
+          if (err) return reject(err);
+          resolve(res);
+      });
+  });
+};
+
+dataPool.insertSelections = (rid, selections) => {
+  return new Promise((resolve, reject) => {
+      const columns = selections.map((_, idx) => `sel_${idx + 1}`).join(', ');
+      const values = selections.map(() => '?').join(', ');
+      const query = `INSERT INTO Selections (rid, ${columns}) VALUES (${rid}, ${values})`;
+      conn.query(query, [rid, ...selections], (err, res) => {
+          if (err) return reject(err);
+          resolve(res);
+      });
+  });
+};
+
+dataPool.insertPriceBands = (rid, priceBands) => {
+  return new Promise((resolve, reject) => {
+      const columns = priceBands.map((_, idx) => `band_${idx + 1}`).join(', ');
+      const values = priceBands.map(() => '?').join(', ');
+      const query = `INSERT INTO PriceBands (rid, ${columns}) VALUES (${rid}, ${values})`;
+      conn.query(query, [rid, ...priceBands], (err, res) => {
+          if (err) return reject(err);
+          resolve(res);
+      });
+  });
+};
+
+dataPool.insertFailures = (rid, failures) => {
+  return new Promise((resolve, reject) => {
+      const columns = failures.map((_, idx) => `fail_${idx + 1}`).join(', ');
+      const values = failures.map(() => '?').join(', ');
+      const query = `INSERT INTO Failures (rid, ${columns}) VALUES (${rid}, ${values})`;
+      conn.query(query, [rid, ...failures], (err, res) => {
+          if (err) return reject(err);
+          resolve(res);
+      });
+  });
+};
+
+dataPool.insertCoinMechData = (rid, coinMechData) => {
+  return new Promise((resolve, reject) => {
+      const columns = Object.keys(coinMechData).join(', ');
+      const values = Object.values(coinMechData).map(() => '?').join(', ');
+      const query = `INSERT INTO CoinMechData (rid, ${columns}) VALUES (${rid}, ${values})`;
+      conn.query(query, [rid, ...Object.values(coinMechData)], (err, res) => {
+          if (err) return reject(err);
+          resolve(res);
+      });
+  });
+};
 
 
 module.exports = dataPool;

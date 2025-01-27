@@ -48,7 +48,6 @@ class App extends Component {
         return <FilesUploadComponent />;
       case MACHINES:
         return <MachineView QSetView={this.QSetView} />;
-
       default:
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
     }
