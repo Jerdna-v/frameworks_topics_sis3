@@ -9,8 +9,9 @@ users.post('/login', async (req, res, next) => {
         const password = req.body.password;
         if (username && password) {
             const queryResult = await DB.AuthUser(username)
+            console.log(queryResult[0])
             if (queryResult.length > 0) {
-                if (password === queryResult[0].user_password) {
+                if (password === queryResult[0].password) {
                     req.session.user = queryResult
                     req.session.logged_in = true
                     res.statusCode = 200;
@@ -48,17 +49,26 @@ users.get('/session', async (req, res, next) => {
 
 users.post('/register', async (req, res, next) => {
     try {
-        const { username, password, confirmPassword, name, phone } = req.body;
-
-        if (username && password && confirmPassword && name && phone) {
-            if (password !== confirmPassword) {
-                return res.status(400).send({ 
-                    status: { success: false, msg: "Passwords do not match" } 
-                });
-            }
+        const { username, password, name, phone } = req.body;
+        console.log(username)
+        console.log(password)
+        console.log(name)
+        console.log(phone)
+          const existingUser = await DB.AuthUser(username);
+          if (existingUser.length > 0) {
+            res.statusCode = 409;
+              res.send({ status: { success: false, msg: "Username already exists!" } });
+              return;
+          }   
+          const existingNumber = await DB.AuthNumber(phone);
+          if (existingNumber.length > 0) {
+            res.statusCode = 409;
+            res.send({ status: { success: false, msg: "Phone number already exists!" } });
+              return;
+          } 
             const currentDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-            const queryResult = await DB.AddUser(username, password, name, phone, currentDateTime);
+            const queryResult = await DB.addUser(username, password, name, phone, currentDateTime);
             
             if (queryResult.affectedRows) {
                 res.statusCode = 200;
@@ -68,11 +78,6 @@ users.post('/register', async (req, res, next) => {
                 res.statusCode = 500;
                 res.send({ status: { success: false, msg: "Failed to add user" } });
             }
-        } else {
-            res.statusCode = 400;
-            res.send({ status: { success: false, msg: "Input element missing" } });
-            console.log("A field is missing!");
-        }
 
         res.end();
     } catch (err) {

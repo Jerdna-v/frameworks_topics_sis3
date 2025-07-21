@@ -75,7 +75,7 @@ class LoginView extends React.Component {
         console.log("Sent to server...");
         console.log(this.state.user_input);
         console.log(response.status);
-        if (response.status === 200) {
+        if (response.status === 200 && response.data.status.success) {
           console.log(response.data);
           this.setState((this.state.status = response.data.status));
           this.setState((this.state.user = response.data.user));

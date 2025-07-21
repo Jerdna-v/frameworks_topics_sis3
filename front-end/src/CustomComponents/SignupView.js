@@ -46,13 +46,14 @@ class SignupView extends React.Component {
     }
     console.log()
     axios.post(API_URL + '/users/register', {
-      username: this.state.user_input.username,
-      email: this.state.user_input.email,
-      password: this.state.user_input.password
+      username,
+      password,
+      name,
+      phone, 
     })
       .then(response => {
         /// TODO: You should indicate if the element was added, or if not show the error
-        this.setState(this.state.status = response.data)
+        this.setState({status: response.data.status})
         console.log("Sent to server...")
       })
       .catch(err => {

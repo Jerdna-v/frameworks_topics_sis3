@@ -72,4 +72,5 @@ class HomeView extends React.Component{
     user: PropTypes.object,
   };
 
+
 export default HomeView

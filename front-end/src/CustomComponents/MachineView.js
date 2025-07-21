@@ -181,15 +181,12 @@ class MachineView extends React.Component {
             {sortedMachines.length > 0 ? (
               sortedMachines.map((machine) => (
                 <div className="col" key={machine.mid}>
-                  <div
-                    className="card cursor-pointer"
-                    onClick={() => this.QSetViewInParent({ page: "machinedetails", id: machine.mid })}
-                  >
+                  <div className="card">
                     <div className="card-body">
                       <h5 className="card-title">{machine.name}</h5>
                       <p className="card-text">
                         Type: {machine.type} <br />
-                        Location: {machine.location || "Store"} <br />
+                        Location: {machine.location || "Store"} <br /> {/* CHANGED */}
                         Start Date: {machine.startDate}
                       </p>
                     </div>
@@ -200,7 +197,69 @@ class MachineView extends React.Component {
               <p>No machines found...</p>
             )}
           </div>
-
+  
+          {/* Add Machine Popup */}
+          {showAddMachinePopup && (
+            <div className="popup">
+              <h5>Add Machine</h5>
+              <input
+                type="text"
+                name="mid"
+                placeholder="Machine ID (optional)" // ADDED
+                value={newMachine.mid} // ADDED
+                onChange={this.handleAddMachineChange} // ADDED
+                className="form-control"
+              />
+              <input
+                type="text"
+                name="name"
+                placeholder="Name"
+                value={newMachine.name}
+                onChange={this.handleAddMachineChange}
+                className="form-control"
+              />
+              <div>
+                <input
+                  type="checkbox"
+                  name="store"
+                  checked={newMachine.store} // ADDED
+                  onChange={this.handleAddMachineChange} // ADDED
+                />
+                <label>Store</label>
+              </div>
+              {!newMachine.store && (
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Location"
+                  value={newMachine.location} // ADDED
+                  onChange={this.handleAddMachineChange} // ADDED
+                  className="form-control"
+                />
+              )}
+              <select
+                name="type"
+                value={newMachine.type}
+                onChange={this.handleAddMachineChange} // ADDED
+                className="form-select"
+              >
+                <option value="astra">Astra</option> {/* CHANGED */}
+              </select>
+              <input
+                type="date"
+                name="startDate"
+                value={newMachine.startDate}
+                onChange={this.handleAddMachineChange} // ADDED
+                className="form-control"
+              />
+              <button className="btn btn-primary" onClick={this.handleAddMachineSubmit}>
+                Submit
+              </button>
+              <button className="btn btn-secondary" onClick={this.toggleAddMachinePopup}>
+                Cancel
+              </button>
+            </div>
+          )}
   
           {/* Filter Popup */}
           {showFilterPopup && (
