@@ -75,7 +75,7 @@ class LoginView extends React.Component {
         console.log("Sent to server...");
         console.log(this.state.user_input);
         console.log(response.status);
-        if (response.status === 200) {
+        if (response.status === 200 && response.data.status.success) {
           console.log(response.data);
           this.setState((this.state.status = response.data.status));
           this.setState((this.state.user = response.data.user));
@@ -98,7 +98,13 @@ class LoginView extends React.Component {
             this.props.QUserFromChild(this.state);
           }
         } else {
-          console.log("Something is really wrong, DEBUG!");
+          console.log("Invalid credentials, clearing cookies.");
+          cookies.remove("user_name", { path: "/" });
+          cookies.remove("user_password", { path: "/" });
+          this.setState({
+            status: { success: false, msg: "Invalid username or password." },
+            user_input: { ...this.state.user_input, password: "" },
+          });
         }
       })
       .catch((err) => {

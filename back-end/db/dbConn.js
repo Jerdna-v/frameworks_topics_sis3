@@ -4,7 +4,7 @@ const conn = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS, 
-    database: 'Qcodeigniter',
+    database: process.env.DB_DATABASE,
   })
 
  conn.connect((err) => {
@@ -18,52 +18,7 @@ const conn = mysql.createConnection({
 
     let dataPool={}
   
-dataPool.allNovice=()=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`SELECT * FROM news`, (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
 
-dataPool.oneNovica=(id)=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`SELECT * FROM news WHERE id = ?`, id, (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
-
-dataPool.creteNovica=(title,slug,text,file)=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`INSERT INTO news (title,slug,text, file) VALUES (?,?,?,?)`, [title, slug, text, file], (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
-
-dataPool.AuthUser=(username)=>
-{
-  return new Promise ((resolve, reject)=>{
-    conn.query('SELECT * FROM user_login WHERE user_name = ?', username, (err,res, fields)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })  
-	
-}
-
-dataPool.AddUser=(username,email,password)=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`INSERT INTO user_login (user_name,user_email,user_password) VALUES (?,?,?)`, [username, email, password], (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
 
 dataPool.getAllUsers = () => {
   return new Promise((resolve, reject) => {
@@ -74,26 +29,23 @@ dataPool.getAllUsers = () => {
   });
 };
 
-dataPool.AuthUser_ = (username) => {
+dataPool.AuthUser = (username) => {
   return new Promise((resolve, reject) => {
     conn.query(
-      'SELECT username, phone_number, password FROM Users WHERE username = ?',
+      'SELECT username, password FROM Users WHERE username = ?',
       [username],
       (err, res) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(res);
+        if (err) return reject(err);
+        resolve(res);
       }
     );
   });
 };
-
-dataPool.addUser = (username, password, name, type, phoneNumber, startDate) => {
+dataPool.AuthNumber = (phone) => {
   return new Promise((resolve, reject) => {
     conn.query(
-      'INSERT INTO Users (username, password, name, type, phone_number, start_date) VALUES (?,?,?,?,?,?)',
-      [username, password, name, type, phoneNumber, startDate],
+      'SELECT username, phone_number, password FROM Users WHERE phone_number = ?',
+      [phone],
       (err, res) => {
         if (err) return reject(err);
         resolve(res);
@@ -102,6 +54,18 @@ dataPool.addUser = (username, password, name, type, phoneNumber, startDate) => {
   });
 };
 
+dataPool.addUser = (username, password, name, phoneNumber, startDate) => {
+  return new Promise((resolve, reject) => {
+    conn.query(
+      'INSERT INTO Users (username, password, name, phone_number, start_date) VALUES (?, ?, ?, ?, ?)',
+      [username, password, name, phoneNumber, startDate],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve(res);
+      }
+    );
+  });
+};
 dataPool.updateUser = (uid, username, password, name, type, phoneNumber, startDate) => {
   return new Promise((resolve, reject) => {
     conn.query(
@@ -117,13 +81,12 @@ dataPool.updateUser = (uid, username, password, name, type, phoneNumber, startDa
 
 dataPool.deleteUser = (uid) => {
   return new Promise((resolve, reject) => {
-    conn.query('DELETE FROM Users WHERE uid = ?', uid, (err, res) => {
+    conn.query('DELETE FROM Users WHERE uid = ?', [uid], (err, res) => {
       if (err) return reject(err);
       resolve(res);
     });
   });
 };
-
 dataPool.getAllNotifications = () => {
   return new Promise((resolve, reject) => {
     conn.query('SELECT * FROM Notifications', (err, res) => {
@@ -136,7 +99,7 @@ dataPool.getAllNotifications = () => {
 dataPool.addNotification = (uid, muid, type, context) => {
   return new Promise((resolve, reject) => {
     conn.query(
-      'INSERT INTO Notifications (uid, muid, type, context) VALUES (?,?,?,?)',
+      'INSERT INTO Notifications (uid, muid, type, context) VALUES (?, ?, ?, ?)',
       [uid, muid, type, context],
       (err, res) => {
         if (err) return reject(err);
@@ -148,55 +111,10 @@ dataPool.addNotification = (uid, muid, type, context) => {
 
 dataPool.deleteNotification = (nuid) => {
   return new Promise((resolve, reject) => {
-    conn.query('DELETE FROM Notifications WHERE nuid = ?', nuid, (err, res) => {
+    conn.query('DELETE FROM Notifications WHERE nuid = ?', [nuid], (err, res) => {
       if (err) return reject(err);
       resolve(res);
     });
-  });
-};
-
-dataPool.createTables = () => {
-  return new Promise((resolve, reject) => {
-    const createMachinesTable = `
-      CREATE TABLE IF NOT EXISTS Machines (
-        mid INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100),
-        type VARCHAR(100),
-        location VARCHAR(255),
-        start_date DATE
-      );
-    `;
-    const createUsersTable = `
-      CREATE TABLE IF NOT EXISTS Users (
-        uid INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(100),
-        password VARCHAR(255),
-        name VARCHAR(100),
-        type ENUM('owner', 'worker') DEFAULT 'worker',
-        phone_number VARCHAR(15),
-        start_date DATE
-      );
-    `;
-    const createNotificationsTable = `
-      CREATE TABLE IF NOT EXISTS Notifications (
-        nuid INT AUTO_INCREMENT PRIMARY KEY,
-        uid INT,
-        muid INT,
-        type VARCHAR(100),
-        context TEXT,
-        FOREIGN KEY (uid) REFERENCES Users(uid),
-        FOREIGN KEY (muid) REFERENCES Machines(mid)
-      );
-    `;
-    conn.query(
-      createMachinesTable + createUsersTable + createNotificationsTable,
-      (err, res) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(res);
-      }
-    );
   });
 };
 
@@ -210,11 +128,11 @@ dataPool.getAllMachines = () => {
   });
 };
 
-dataPool.addMachine = (name, type, location, startDate) => {
+dataPool.addMachine = (name, type, location, latitude, longitude, startDate) => {
   return new Promise((resolve, reject) => {
     conn.query(
-      'INSERT INTO Machines (name, type, location, start_date) VALUES (?,?,?,?)',
-      [name, type, location, startDate],
+      'INSERT INTO Machines (name, type, location, latitude, longitude, start_date) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, type, location, latitude, longitude, startDate],
       (err, res) => {
         if (err) return reject(err);
         resolve(res);
@@ -222,12 +140,11 @@ dataPool.addMachine = (name, type, location, startDate) => {
     );
   });
 };
-
-dataPool.updateMachine = (mid, name, type, location, startDate) => {
+dataPool.updateMachine = (mid, name, type, location, latitude, longitude, startDate) => {
   return new Promise((resolve, reject) => {
     conn.query(
-      'UPDATE Machines SET name = ?, type = ?, location = ?, start_date = ? WHERE mid = ?',
-      [name, type, location, startDate, mid],
+      'UPDATE Machines SET name = ?, type = ?, location = ?, latitude = ?, longitude = ?, start_date = ? WHERE mid = ?',
+      [name, type, location, latitude, longitude, startDate, mid],
       (err, res) => {
         if (err) return reject(err);
         resolve(res);
@@ -238,20 +155,260 @@ dataPool.updateMachine = (mid, name, type, location, startDate) => {
 
 dataPool.deleteMachine = (mid) => {
   return new Promise((resolve, reject) => {
-    conn.query('DELETE FROM Machines WHERE mid = ?', mid, (err, res) => {
+    conn.query('DELETE FROM Machines WHERE mid = ?', [mid], (err, res) => {
       if (err) return reject(err);
       resolve(res);
     });
   });
 };
 
-dataPool.oneMachine=(mid)=>{
-  return new Promise ((resolve, reject)=>{
-    conn.query(`SELECT * FROM Machines WHERE mid = ?`, mid, (err,res)=>{
-      if(err){return reject(err)}
-      return resolve(res)
-    })
-  })
-}
+dataPool.oneMachine = (mid) => {
+  return new Promise((resolve, reject) => {
+    conn.query('SELECT * FROM Machines WHERE mid = ?', [mid], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.createRTables = () => {
+  return new Promise((resolve, reject) => {
+const createUsersTable = `
+CREATE TABLE IF NOT EXISTS Users (
+  uid INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(100) NOT NULL,
+  password VARCHAR(100) NOT NULL,
+  name VARCHAR(100),
+  phone_number VARCHAR(100),
+  start_date DATE,
+  type VARCHAR(100) DEFAULT 'worker'
+);`;
+
+const createMachinesTable = `
+CREATE TABLE IF NOT EXISTS Machines (
+  mid INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  type VARCHAR(100),
+  location VARCHAR(100),
+  startDate DATE,
+  latitude FLOAT,
+  longitude FLOAT
+);`;
+
+const createReportsTable = `
+CREATE TABLE IF NOT EXISTS Reports (
+  rid INT AUTO_INCREMENT PRIMARY KEY,
+  uid INT NOT NULL,
+  mid INT NOT NULL,
+  date_time DATETIME,
+  FOREIGN KEY (uid) REFERENCES Users(uid),
+  FOREIGN KEY (mid) REFERENCES Machines(mid)
+);`;
+
+const createNotificationsTable = `
+CREATE TABLE IF NOT EXISTS Notifications (
+  nid INT AUTO_INCREMENT PRIMARY KEY,
+  uid INT NOT NULL,
+  mid INT,
+  title VARCHAR(255),
+  message TEXT,
+  urgent BOOLEAN DEFAULT FALSE,
+  is_done BOOLEAN DEFAULT FALSE,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (uid) REFERENCES Users(uid),
+  FOREIGN KEY (mid) REFERENCES Machines(mid)
+);`;
+
+const createProductTable = `
+CREATE TABLE IF NOT EXISTS Product (
+  date_time DATETIME PRIMARY KEY,
+  mid INT NOT NULL,
+  product_type VARCHAR(100),
+  product_amount INT DEFAULT 0,
+  description TEXT,
+  FOREIGN KEY (mid) REFERENCES Machines(mid)
+);`;
+
+const createCashFlowTable = `
+CREATE TABLE IF NOT EXISTS CashFlow (
+  date_time DATETIME PRIMARY KEY,
+  mid INT NOT NULL,
+  cashflow_type VARCHAR(100),
+  cash_amount INT DEFAULT 0,
+  description TEXT,
+  FOREIGN KEY (mid) REFERENCES Machines(mid)
+);`;
+
+const createSelectionsTable = `
+CREATE TABLE IF NOT EXISTS Selections (
+  selection_id INT AUTO_INCREMENT PRIMARY KEY,
+  rid INT NOT NULL,
+  type VARCHAR(100),
+  amount INT DEFAULT 0,
+  description TEXT,
+  FOREIGN KEY (rid) REFERENCES Reports(rid)
+);`;
+
+const createFailuresTable = `
+CREATE TABLE IF NOT EXISTS Failures (
+  failid INT AUTO_INCREMENT PRIMARY KEY,
+  rid INT NOT NULL,
+  type VARCHAR(100),
+  amount INT DEFAULT 0,
+  description TEXT,
+  FOREIGN KEY (rid) REFERENCES Reports(rid)
+);`;
+
+const createReportTotalsTable = `
+CREATE TABLE IF NOT EXISTS ReportTotals (
+  totalid INT AUTO_INCREMENT PRIMARY KEY,
+  rid INT NOT NULL,
+  type VARCHAR(100),
+  amount INT DEFAULT 0,
+  description TEXT,
+  FOREIGN KEY (rid) REFERENCES Reports(rid)
+);`;
+
+const createPriceBandsTable = `
+CREATE TABLE IF NOT EXISTS PriceBands (
+  priceid INT AUTO_INCREMENT PRIMARY KEY,
+  rid INT NOT NULL,
+  type VARCHAR(100),
+  amount INT DEFAULT 0,
+  description TEXT,
+  FOREIGN KEY (rid) REFERENCES Reports(rid)
+);`;
+
+const createCoinMechDataTable = `
+CREATE TABLE IF NOT EXISTS CoinMechData (
+  coinid INT AUTO_INCREMENT PRIMARY KEY,
+  rid INT NOT NULL,
+  type VARCHAR(100),
+  amount INT DEFAULT 0,
+  description TEXT,
+  FOREIGN KEY (rid) REFERENCES Reports(rid)
+);`;
+
+// Chain the table creation queries
+conn.query(createUsersTable, (err) => {
+  if (err) return reject(err);
+  conn.query(createMachinesTable, (err) => {
+    if (err) return reject(err);
+    conn.query(createReportsTable, (err) => {
+      if (err) return reject(err);
+      conn.query(createNotificationsTable, (err) => {
+        if (err) return reject(err);
+        conn.query(createProductTable, (err) => {
+          if (err) return reject(err);
+          conn.query(createCashFlowTable, (err) => {
+            if (err) return reject(err);
+            conn.query(createSelectionsTable, (err) => {
+              if (err) return reject(err);
+              conn.query(createFailuresTable, (err) => {
+                if (err) return reject(err);
+                conn.query(createReportTotalsTable, (err) => {
+                  if (err) return reject(err);
+                  conn.query(createPriceBandsTable, (err) => {
+                    if (err) return reject(err);
+                    conn.query(createCoinMechDataTable, (err) => {
+                      if (err) return reject(err);
+                      resolve("All tables created successfully or already exist.");
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+  });
+};
+
+
+dataPool.insertReport = (uid, mid, dateTime) => {
+  return new Promise((resolve, reject) => {
+    const query = `INSERT INTO Reports (uid, mid, date_time) VALUES (?, ?, ?)`;
+    conn.query(query, [uid, mid, dateTime], (err, res) => {
+      if (err) return reject(err);
+      resolve(res.insertId); // Return the newly inserted rid
+    });
+  });
+};
+
+
+
+dataPool.insertSelections = (rid, selections) => {
+  return new Promise((resolve, reject) => {
+    const values = selections.map(sel => [rid, sel.type, sel.amount, sel.description]);
+    const sql = `INSERT INTO Selections (rid, type, amount, description) VALUES ?`;
+    conn.query(sql, [values], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+
+dataPool.insertPriceBands = (rid, bands) => {
+  return new Promise((resolve, reject) => {
+    const values = bands.map(b => [rid, b.type, b.amount, b.description]);
+    const sql = `INSERT INTO PriceBands (rid, type, amount, description) VALUES ?`;
+    conn.query(sql, [values], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+
+dataPool.insertFailures = (rid, failures) => {
+  return new Promise((resolve, reject) => {
+    const values = failures.map(f => [rid, f.type, f.amount, f.description]);
+    const sql = `INSERT INTO Failures (rid, type, amount, description) VALUES ?`;
+    conn.query(sql, [values], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+
+dataPool.insertCoinMechData = (rid, coinMechData) => {
+  return new Promise((resolve, reject) => {
+    const types = Object.keys(coinMechData);
+    const values = types.map(type => [rid, type, coinMechData[type], ""]);
+
+    const sql = `INSERT INTO CoinMechData (rid, type, amount, description) VALUES ?`;
+    conn.query(sql, [values], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.checkMachineExists = (mid) => {
+  return new Promise((resolve, reject) => {
+    conn.query('SELECT 1 FROM Machines WHERE mid = ?', [mid], (err, res) => {
+      if (err) return reject(err);
+      resolve(res.length > 0);
+    });
+  });
+};
+
+dataPool.insertMachine = (mid) => {
+  return new Promise((resolve, reject) => {
+    const query = `INSERT INTO Machines (mid) VALUES (?)`;
+    conn.query(query, [mid], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+
 module.exports = dataPool;
 
