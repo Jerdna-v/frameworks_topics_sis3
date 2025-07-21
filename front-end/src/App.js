@@ -1,12 +1,20 @@
 import { Component } from "react";
-import { SIGNUP, LOGIN, HOME, UPLOAD } from "./Utils/Constants";
+import { SIGNUP, LOGIN, HOME, UPLOAD, MACHINES, NOTIFICATIONS, PRODUCT, CASHFLOW, SENDNOTIFICATION, MAP, USERS, ABOUT, MACHINEDETAILS } from "./Utils/Constants";
 import HomeView from "./CustomComponents/HomeView";
 import SignupView from "./CustomComponents/SignupView";
 import LoginView from "./CustomComponents/LoginView";
 import FilesUploadComponent from "./CustomComponents/FilesUpload";
-import axios from "axios";
-import { API_URL } from "./Utils/Configuration";
+import MachineView from "./CustomComponents/MachineView";
+import CashFlowForm from "./CustomComponents/CashFlowForm";
+import InventoryInput from "./CustomComponents/InventoryInput";
+import NotificationView from "./CustomComponents/NotificationView";
+import SendNotification from "./CustomComponents/SendNotification";
+import UserView from "./CustomComponents/UserView";
+import AboutView from "./CustomComponents/AboutView";
+import MachineDetailsPage from "./CustomComponents/MachineDetailsPage";
 import Cookies from "universal-cookie";
+import NotificationsView from "./CustomComponents/NotificationView";
+import MapView from "./CustomComponents/MapView";
 const cookies = new Cookies();
 
 class App extends Component {
@@ -21,49 +29,78 @@ class App extends Component {
       },
       user: null
     };
-    if (cookies.get('user_name') != null && this.state.user == null) {
-      this.state.CurrentPage = LOGIN
+  }
+  componentDidMount() {
+    // Check if a user is remembered in cookies
+    const rememberedUserName = cookies.get("user_name");
+    if (rememberedUserName) {
+      // Navigate to HomeView and set the user state
+      this.setState({
+        CurrentPage: HOME,
+        user: { user_name: rememberedUserName },
+      });
     }
-
   }
 
   QGetView(state) {
     const { CurrentPage } = state;
     switch (CurrentPage) {
       case SIGNUP:
-        return <SignupView />;
+        return <SignupView QSetView={this.QSetView}/>;
       case LOGIN:
-        return <LoginView QUserFromChild={this.QSetLoggedIn} />;
+        return <LoginView QUserFromChild={this.QSetLoggedIn} QSetView={this.QSetView}/>;
       case HOME:
-        return <HomeView user={this.state.user} QLogout={this.QHandleLogout} />;
+        return <HomeView user={this.state.user} QSetView={this.QSetView} QLogout={this.QPostLogout} />;
       case UPLOAD:
         return <FilesUploadComponent />;
+      case NOTIFICATIONS:
+        return <NotificationView QSetView={this.QSetView} />;
+      case PRODUCT:
+        return <InventoryInput QSetView={this.QSetView} />;
+      case CASHFLOW:
+        return <CashFlowForm QSetView={this.QSetView} />;
+      case SENDNOTIFICATION:
+        return <SendNotification QSetView={this.QSetView} />;
+      case MAP:
+        return <MapView QSetView={this.QSetView} />;
+      case MACHINES:
+        return <MachineView QSetView={this.QSetView} />;
+      case USERS:
+        return <UserView QSetView={this.QSetView} />;
+      case ABOUT:
+        return <AboutView QSetView={this.QSetView} />;
+      case MACHINEDETAILS:
+        return <MachineDetailsPage QSetView={this.QSetView} />;
       default:
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
     }
   }
+  // QPostLogout = () => {
+  //   let req = axios.create({
+  //     timeout: 20000,
+  //     withCredentials: true,
+  //   });
+
+  //   req
+  //     .get(`${API_URL}/users/logout`, {}, { withCredentials: true })
+  //     .then((response) => {
+  //       if (response.status === 200) {
+  //         console.log(response.data);
+  //         this.setState((this.state.status = response.data));
+  //         this.setState({ user: null, CurrentPage: LOGIN }); // Redirect to LoginView
+  //       } else {
+  //         console.log("Something is really wrong, DEBUG!");
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // };
   QPostLogout = () => {
-    let req = axios.create({
-      timeout: 20000,
-      withCredentials: true,
-    });
-
-    req
-      .get(`${API_URL}/users/logout`, {}, { withCredentials: true })
-      .then((response) => {
-        if (response.status === 200) {
-          console.log(response.data);
-          this.setState((this.state.status = response.data));
-          this.setState({ user: null, CurrentPage: LOGIN }); // Redirect to LoginView
-        } else {
-          console.log("Something is really wrong, DEBUG!");
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    cookies.remove("user_name", { path: "/" });
+    cookies.remove("user_password", { path: "/" });
+    this.setState({ user: null, CurrentPage: LOGIN });
   };
-
   QSetView = (obj) => {
     this.setState(this.state.status = { success: null, msg: "" })
 
@@ -74,8 +111,8 @@ class App extends Component {
     });
   };
   QSetLoggedIn = (obj) => {
-    this.setState(this.state.user = obj.user)
-  }
+    this.setState({ user: obj.user, CurrentPage: HOME });
+  };
 
   render() {
     return (
