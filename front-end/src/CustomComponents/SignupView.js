@@ -8,8 +8,10 @@ class SignupView extends React.Component {
     this.state = {
       user_input: {
         username: "",
-        email: "",
-        password: ""
+        phone: "",
+        name: "",
+        password: "",
+        confirm_password: "",
       },
       status: {
         success: false,
@@ -28,12 +30,21 @@ class SignupView extends React.Component {
   }
 
   QPostSignup = () => {
-    // TODO: you should validate the data before sending it to the server,
+    const { name, username, phone, password, confirm_password } =
+      this.state.user_input;
+      if (!name || !username || !phone || !password || !confirm_password) {
+      this.setState({
+        status: { success: false, msg: "All fields are required." },
+      });
+      return;
+    }
 
     axios.post(API_URL + '/users/register', {
-      username: this.state.user_input.username,
-      email: this.state.user_input.email,
-      password: this.state.user_input.password
+      username,
+      password,
+      confirm_password,
+      name,
+      phone, 
     })
       .then(response => {
         /// TODO: You should indicate if the element was added, or if not show the error
@@ -47,54 +58,93 @@ class SignupView extends React.Component {
 
   render() {
     return (
-      <div className="card"
-        style={{ width: "400px", marginLeft: "auto", marginRight: "auto", marginTop: "10px", marginBottom: "10px" }}>
-        <form style={{ margin: "20px" }} >
-          <div className="mb-3">
-            <label className="form-label">Username</label>
-            <input name="username" onChange={(e) => this.QGetTextFromField(e)}
+      <div
+        className="card"
+        style={{
+          width: "400px",
+          marginLeft: "auto",
+          marginRight: "auto",
+          marginTop: "10px",
+          marginBottom: "10px",
+        }}
+      >
+        <form style={{ margin: "20px" }}>
+        <div className="mb-3">
+            <label className="form-label">Name</label>
+            <input
+              name="name"
+              onChange={(e) => this.QGetTextFromField(e)}
               type="text"
               className="form-control"
-              id="exampleInputEmail1"
-              aria-describedby="emailHelp" />
+              placeholder="Enter your name"
+            />
           </div>
           <div className="mb-3">
-            <label className="form-label">Email address</label>
-            <input name="email" onChange={(e) => this.QGetTextFromField(e)}
-              type="email"
+            <label className="form-label">Username</label>
+            <input
+              name="username"
+              onChange={(e) => this.QGetTextFromField(e)}
+              type="text"
               className="form-control"
-              id="exampleInputEmail1"
-              aria-describedby="emailHelp" />
-            <div id="emailHelp"
-              className="form-text">We'll never share your email with anyone else.
+              placeholder="Enter your username"
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Phone Number</label>
+            <input
+              name="phone"
+              onChange={(e) => this.QGetTextFromField(e)}
+              type="text"
+              className="form-control"
+              placeholder="Enter your phone number"
+            />
+            <div id="phoneHelp" className="form-text">
+              We'll never share your phone number with anyone else.
             </div>
           </div>
           <div className="mb-3">
             <label className="form-label">Password</label>
-            <input name="password" onChange={(e) => this.QGetTextFromField(e)}
+            <input
+              name="password"
+              onChange={(e) => this.QGetTextFromField(e)}
               type="password"
               className="form-control"
-              id="exampleInputPassword1" />
+              placeholder="Enter your password"
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Confirm Password</label>
+            <input
+              name="confirm_password"
+              onChange={(e) => this.QGetTextFromField(e)}
+              type="password"
+              className="form-control"
+              placeholder="Re-enter your password"
+            />
           </div>
         </form>
-        <button style={{ margin: "10px" }} onClick={() => this.QPostSignup()}
-          className="btn btn-primary bt">Submit</button>
-       
-        {/* TODO: We should display error to the user if something went wrong or a
-        success message  if an item was added. Use paragraph with the following classNmes:
-          => no success: <p className="alert alert-danger" role="alert"> 
-          => success: <p className="alert alert-success" role="alert">*/}
-        {this.state.status.success ?
-          <p className="alert alert-success"
-            role="alert">{this.state.status.msg}</p> : null}
+        <button
+          style={{ margin: "10px" }}
+          onClick={() => this.QPostSignup()}
+          className="btn btn-primary"
+        >
+          Submit
+        </button>
 
-        {!this.state.status.success &&
-          this.state.status.msg != "" ?
-          <p className="alert alert-danger"
-            role="alert">{this.state.status.msg}</p> : null}
+        {/* Display success or error messages */}
+        {this.state.status.success ? (
+          <p className="alert alert-success" role="alert">
+            {this.state.status.msg}
+          </p>
+        ) : null}
 
+        {!this.state.status.success && this.state.status.msg !== "" ? (
+          <p className="alert alert-danger" role="alert">
+            {this.state.status.msg}
+          </p>
+        ) : null}
       </div>
-    )
+    );
   }
 }
 
