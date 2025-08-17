@@ -15,7 +15,6 @@ const storage = multer.diskStorage({
 
 let upload_dest = multer({ dest: 'uploads/' });
 
-// Helper function to extract MID
 function extractMid(content) {
     const operCodeRegex = /OPER\. CODE ENTRY\s+Cod\.\s+=\s+(\d+)/;
     const progMachineCodeRegex = /PROGR\. MACHINE CODE\s+Cod\.\s+=\s+(\d+)/;
@@ -37,11 +36,10 @@ function extractMid(content) {
     return operMid;
 }
 
-// Helper function to parse file content
 function parseFileContent(content) {
   const data = {
     selections: Array(40).fill(0),
-    priceBands: Array(10).fill(0), // Adjusted for one additional price band
+    priceBands: Array(10).fill(0), 
     failures: Array(41).fill(0),
     coinMechData: {
       coin_1: 0,
@@ -57,7 +55,6 @@ function parseFileContent(content) {
     report: { total_count: 0, full_sel_norm: 0, full_sel_maint: 0, total_selections: 0 },
   };
 
-  // Updated regex patterns
   const selectionRegex = /SELECTION NUM\.\s*(\d+)\s*Total\s*=\s*(\d+)/gi;
   const priceBandRegex = /Band\s*(\d+)\s*Total\s*=\s*(\d+)/gi;
   const failureRegex = /Counter\s*=\s*(\d+)/gi;
@@ -72,7 +69,6 @@ function parseFileContent(content) {
 
   let match;
 
-  // Extract selections
   while ((match = selectionRegex.exec(content)) !== null) {
     const index = parseInt(match[1], 10);
     const value = parseInt(match[2], 10);
@@ -81,7 +77,6 @@ function parseFileContent(content) {
     }
   }
 
-  // Extract price bands (including one extra for "Free")
   while ((match = priceBandRegex.exec(content)) !== null) {
     const index = parseInt(match[1], 10);
     const value = parseInt(match[2], 10);
@@ -90,13 +85,11 @@ function parseFileContent(content) {
     }
   }
 
-  // Extract failures
   let failureIndex = 0;
   while ((match = failureRegex.exec(content)) !== null && failureIndex < 41) {
     data.failures[failureIndex++] = parseInt(match[1], 10);
   }
 
-  // Extract coin mechanism data
   while ((match = coinMechRegex.exec(content)) !== null) {
     const coinKey = `coin_${match[1]}`;
     if (data.coinMechData.hasOwnProperty(coinKey)) {
@@ -104,7 +97,6 @@ function parseFileContent(content) {
     }
   }
 
-  // Extract total counts and selections
   match = totalCountRegex.exec(content);
   if (match) data.report.total_count = parseInt(match[1], 10);
 
@@ -117,7 +109,6 @@ function parseFileContent(content) {
   match = totalSelectionsRegex.exec(content);
   if (match) data.report.total_selections = parseInt(match[1], 10);
 
-  // Extract total cash, sales, and cash credit
   match = totalCashRegex.exec(content);
   if (match) data.coinMechData.total_cash = parseInt(match[1], 10);
 
@@ -127,7 +118,6 @@ function parseFileContent(content) {
   match = totalCashCreditRegex.exec(content);
   if (match) data.coinMechData.total_cash_credit = parseInt(match[1], 10);
 
-  // Debugging logs to verify extracted data
   console.log("Selections Data:", data.selections);
   console.log("PriceBands Data:", data.priceBands);
   console.log("Failures Data:", data.failures);
@@ -147,23 +137,18 @@ upload.post('/', upload_dest.single('file'), async (req, res, next) => {
   }
 
   try {
-    // Read the file content
     const rawContent = fs.readFileSync(file.path, 'utf8');
     console.log("Raw File Content:", rawContent);
 
-    // Split into lines and join into a single string, removing \r characters
     const lines = rawContent.split(/\r?\n/);
     console.log("Lines in File:", lines);
 
-    // Combine lines back into a single string and remove `\r`
     const content = lines.join("\n").replace(/\r/g, "");
     console.log("Processed Content:", content);
 
-    // Extract MID and parse content
     const mid = extractMid(content);
     const data = parseFileContent(content);
 
-    // Process data
     const machineExists = await DB.checkMachineExists(mid);
     if (!machineExists) {
       await DB.insertMachine(mid);
