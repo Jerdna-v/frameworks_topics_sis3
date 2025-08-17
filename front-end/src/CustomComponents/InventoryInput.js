@@ -1,104 +1,196 @@
-import React, { useState } from "react";
+import React from "react";
 import axios from "axios";
 
-export default function InventoryInput() {
-  const [date, setDate] = useState("");
-  const [mid, setMid] = useState("");
-  const [products, setProducts] = useState([{ product_type: "", grams: "" }]);
-  const [message, setMessage] = useState("");
+class InventoryInput extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      useNow: false,
+      date: "",
+      time: "",
+      mid: "",
+      products: [{ product_type: "", grams: "" }],
+      message: ""
+    };
+  }
 
-  const handleProductChange = (index, field, value) => {
-    const updated = [...products];
+  QSetViewInParent = (obj) => {
+    if (this.props.QSetView) this.props.QSetView(obj);
+  };
+
+  QHandleProductChange = (index, field, value) => {
+    const updated = [...this.state.products];
     updated[index][field] = value;
-    setProducts(updated);
+    this.setState({ products: updated });
   };
 
-  const addProductField = () => {
-    setProducts([...products, { product_type: "", grams: "" }]);
+  QAddProductField = () => {
+    this.setState((prev) => ({
+      products: [...prev.products, { product_type: "", grams: "" }]
+    }));
   };
 
-  const removeProductField = (index) => {
-    const updated = products.filter((_, i) => i !== index);
-    setProducts(updated);
+  QRemoveProductField = (index) => {
+    this.setState((prev) => ({
+      products: prev.products.filter((_, i) => i !== index)
+    }));
   };
 
-  const handleSubmit = async (e) => {
+  QHandleSubmit = async (e) => {
     e.preventDefault();
+    this.setState({ message: "" });
+    const { useNow, date, time, mid, products } = this.state;
+
+    if (!useNow && (!date || !time)) {
+      this.setState({
+        message: "Please provide both date and time, or enable 'Use current time'."
+      });
+      return;
+    }
+
     try {
       const payload = {
+        current: useNow,
         date,
-        mid: parseInt(mid),
+        time,
+        mid: parseInt(mid, 10),
         products: products.map((p) => ({
           product_type: p.product_type,
           grams: parseFloat(p.grams)
         }))
       };
-      const res = await axios.post("/api/inventory", payload);
-      setMessage(res.data.msg);
+
+      const res = await axios.post("/inventory", payload);
+      this.setState({ message: res.data?.msg || "Inventory saved." });
     } catch (err) {
-      console.error(err);
-      setMessage(err.response?.data?.msg || "Submission failed.");
+      this.setState({
+        message: err.response?.data?.msg || "Submission failed."
+      });
     }
   };
 
-  return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Inventory Input</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium">Date</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            className="border p-2 w-full"
-          />
+  render() {
+    const { useNow, date, time, mid, products, message } = this.state;
+
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <div className="mb-4">
+          <button
+            className="btn btn-secondary"
+            onClick={() => this.QSetViewInParent({ page: "home" })}
+          >
+            ← Back
+          </button>
         </div>
 
-        <div>
-          <label className="block font-medium">Machine ID</label>
-          <input
-            type="number"
-            value={mid}
-            onChange={(e) => setMid(e.target.value)}
-            required
-            className="border p-2 w-full"
-          />
-        </div>
+        <h2 className="text-xl font-bold mb-4">Inventory Input</h2>
 
-        <div>
-          <label className="block font-medium">Products</label>
-          {products.map((p, i) => (
-            <div key={i} className="flex items-center gap-2 mb-2">
+        <form onSubmit={this.QHandleSubmit} className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input
+              id="useNow"
+              type="checkbox"
+              checked={useNow}
+              onChange={(e) => this.setState({ useNow: e.target.checked })}
+            />
+            <label htmlFor="useNow" className="font-medium">
+              Use current date & time
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-medium">Date</label>
               <input
-                type="text"
-                placeholder="Product Type"
-                value={p.product_type}
-                onChange={(e) => handleProductChange(i, "product_type", e.target.value)}
-                required
-                className="border p-2 flex-1"
+                type="date"
+                value={date}
+                onChange={(e) => this.setState({ date: e.target.value })}
+                disabled={useNow}
+                required={!useNow}
+                className="border p-2 w-full"
               />
-              <input
-                type="number"
-                placeholder="Grams"
-                value={p.grams}
-                onChange={(e) => handleProductChange(i, "grams", e.target.value)}
-                required
-                className="border p-2 w-28"
-              />
-              {products.length > 1 && (
-                <button type="button" onClick={() => removeProductField(i)} className="text-red-500">Remove</button>
-              )}
             </div>
-          ))}
-          <button type="button" onClick={addProductField} className="text-blue-500 mt-2">+ Add Another Product</button>
-        </div>
+            <div>
+              <label className="block font-medium">Time</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => this.setState({ time: e.target.value })}
+                disabled={useNow}
+                required={!useNow}
+                className="border p-2 w-full"
+              />
+            </div>
+          </div>
 
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
-      </form>
+          <div>
+            <label className="block font-medium">Machine ID</label>
+            <input
+              type="number"
+              value={mid}
+              onChange={(e) => this.setState({ mid: e.target.value })}
+              required
+              className="border p-2 w-full"
+            />
+          </div>
 
-      {message && <p className="mt-4 text-green-700 font-medium">{message}</p>}
-    </div>
-  );
+          <div>
+            <label className="block font-medium">Products</label>
+            {products.map((p, i) => (
+              <div key={i} className="flex items-center gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Product Type"
+                  value={p.product_type}
+                  onChange={(e) =>
+                    this.QHandleProductChange(i, "product_type", e.target.value)
+                  }
+                  required
+                  className="border p-2 flex-1"
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Grams"
+                  value={p.grams}
+                  onChange={(e) =>
+                    this.QHandleProductChange(i, "grams", e.target.value)
+                  }
+                  required
+                  className="border p-2 w-28"
+                />
+                {products.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => this.QRemoveProductField(i)}
+                    className="text-red-500"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={this.QAddProductField}
+              className="text-blue-500 mt-2"
+            >
+              + Add Another Product
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Submit
+          </button>
+        </form>
+
+        {message && <p className="mt-4 text-green-700 font-medium">{message}</p>}
+      </div>
+    );
+  }
 }
+
+export default InventoryInput;

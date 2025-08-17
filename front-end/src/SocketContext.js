@@ -1,7 +1,8 @@
 import { createContext, useContext } from "react";
 import { io } from "socket.io-client";
+import { API_URL } from "./Utils/Configuration";
 
-export const socket = io("http://localhost:3000"); 
+export const socket = io(API_URL);
 export const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => (

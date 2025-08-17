@@ -1,188 +1,154 @@
 import React from "react";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import axios from "axios";
 import { API_URL } from "../Utils/Configuration";
-import Cookies from 'universal-cookie';
-const cookies = new Cookies();
+import Cookies from "universal-cookie";
 
+const cookies = new Cookies();
+axios.defaults.baseURL = API_URL;
+axios.defaults.withCredentials = true;
 
 class LoginView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user_input: {
-        username: "",
-        password: "",
-        remember_me: false
-      },
+      user_input: { username: "", password: "", remember_me: false },
       user: null,
       phone_number: "",
       showForgotPopup: false,
-      status: {
-        success: null,
-        msg: ""
-      }
-    }
+      status: { success: null, msg: "" },
+      loading: false,
+    };
   }
 
   componentDidMount = () => {
-    if (cookies.get('user_name') != null && this.state.user == null) {
-      this.state.user_input.username = String(cookies.get('user_name'))
-      this.state.user_input.password = String(cookies.get('user_password'))
-      this.setState(this.state.user_input = this.state.user_input)
-      this.QPostLogin()
+    const remembered = cookies.get("remember_me") === "true";
+    const rememberedUsername = cookies.get("remembered_username") || "";
+    if (remembered && rememberedUsername) {
+      this.setState((prev) => ({
+        user_input: { ...prev.user_input, username: rememberedUsername, remember_me: true },
+      }));
     }
-  }
+  };
 
-  QGetTextFromField(e) {
-    this.state.user_input[e.target.name] = e.target.value;
-    this.setState({ user_input: this.state.user_input });
-  }
+  QGetTextFromField = (e) => {
+    const { name, value } = e.target;
+    this.setState((prev) => ({
+      user_input: { ...prev.user_input, [name]: value },
+      status: { success: null, msg: "" },
+    }));
+  };
 
-  QGetRememberMe(e) {
-    this.state.user_input.remember_me = !this.state.user_input.remember_me;
-    this.setState({ user_input: this.state.user_input });
-    console.log(this.state)
-  }
+  QGetRememberMe = () => {
+    this.setState((prev) => ({
+      user_input: { ...prev.user_input, remember_me: !prev.user_input.remember_me },
+    }));
+  };
 
-  QPostLogin = () => {
-    // Validate input fields before sending to the server
-    if (
-      this.state.user_input.username === "" ||
-      this.state.user_input.password === ""
-    ) {
-      this.setState(
-        this.state.status = { success: false, msg: "Missing input field" }
-      );
+  QPostLogin = async () => {
+    const { username, password, remember_me } = this.state.user_input;
+    if (!username || !password) {
+      this.setState({ status: { success: false, msg: "Missing input field" } });
       return;
     }
-
-    let req = axios.create({
-      timeout: 20000,
-      withCredentials: true,
-    });
-
-    req
-      .post(
-        API_URL + "/users/login",
-        {
-          username: this.state.user_input.username,
-          password: this.state.user_input.password,
-        },
-        { withCredentials: true }
-      )
-      .then((response) => {
-        console.log("Sent to server...");
-        console.log(this.state.user_input);
-        console.log(response.status);
-        if (response.status === 200 && response.data.status.success) {
-          console.log(response.data);
-          this.setState((this.state.status = response.data.status));
-          this.setState((this.state.user = response.data.user));
-          if (this.state.status.success) {
-            // Set cookies for 24 hours if "Remember Me" is checked
-            if (this.state.user_input.remember_me) {
-              cookies.set("user_name", this.state.user.user_name, {
-                path: "/",
-                expires: new Date(Date.now() + 86400000), // 24 hours
-              });
-              cookies.set("user_password", this.state.user.user_password, {
-                path: "/",
-                expires: new Date(Date.now() + 86400000), // 24 hours
-              });
-            } else {
-              // Clear cookies if "Remember Me" is not checked
-              cookies.remove("user_name", { path: "/" });
-              cookies.remove("user_password", { path: "/" });
-            }
-            this.props.QUserFromChild(this.state);
-          }
+    this.setState({ loading: true, status: { success: null, msg: "" } });
+    try {
+      const { data, status } = await axios.post("/users/login", { username, password });
+      if (status === 200 && data.status?.success) {
+        if (remember_me) {
+          const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          cookies.set("remembered_username", username, { path: "/", expires });
+          cookies.set("remember_me", "true", { path: "/", expires });
         } else {
-          console.log("Invalid credentials, clearing cookies.");
-          cookies.remove("user_name", { path: "/" });
-          cookies.remove("user_password", { path: "/" });
-          this.setState({
-            status: { success: false, msg: "Invalid username or password." },
-            user_input: { ...this.state.user_input, password: "" },
-          });
+          cookies.remove("remembered_username", { path: "/" });
+          cookies.remove("remember_me", { path: "/" });
         }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+        this.setState({ status: data.status, user: data.user, loading: false });
+        this.props.QUserFromChild({ user: data.user });
+      } else {
+        this.setState({
+          status: { success: false, msg: "Invalid username or password." },
+          loading: false,
+          user_input: { ...this.state.user_input, password: "" },
+        });
+      }
+    } catch (err) {
+      const msg = err?.response?.status === 401 ? "Invalid username or password." : "Login failed. Please try again.";
+      this.setState({ status: { success: false, msg }, loading: false });
+    }
   };
-handleForgotInfo = () => {
-  console.log(`Sending recovery info to: ${this.state.phone_number}`);
-  this.setState({
-    showForgotPopup: false,
-    status: {
-      success: true,
-      msg: `Recovery instructions sent to ${this.state.phone_number}`,
-    },
-  });
-};
+
+  QHandleForgot = async () => {
+    const phone = this.state.phone_number?.trim();
+    if (!phone) {
+      this.setState({ status: { success: false, msg: "Please enter a phone number." } });
+      return;
+    }
+    try {
+      const res = await axios.post("/users/forgot", { phone_number: phone });
+      const msg = res.data?.status?.msg || `Recovery instructions sent to ${this.state.phone_number}`;
+      this.setState({ showForgotPopup: false, status: { success: true, msg } });
+    } catch {
+      this.setState({ showForgotPopup: false, status: { success: false, msg: "Could not send recovery instructions." } });
+    }
+  };
+
   render() {
+    const { user_input, status, showForgotPopup, phone_number, loading } = this.state;
+
     return (
       <div
         className="card"
-        style={{
-          width: "400px",
-          marginLeft: "auto",
-          marginRight: "auto",
-          marginTop: "10px",
-          marginBottom: "10px",
-        }}
+        style={{ width: "400px", marginLeft: "auto", marginRight: "auto", marginTop: "10px", marginBottom: "10px" }}
       >
-        <form style={{ margin: "20px" }}>
+        <form style={{ margin: "20px" }} onSubmit={(e) => e.preventDefault()}>
           <div className="mb-3">
             <label className="form-label">Username</label>
             <input
               name="username"
-              value={this.state.user_input.username}
-              onChange={(e) => this.QGetTextFromField(e)}
+              value={user_input.username}
+              onChange={this.QGetTextFromField}
               type="text"
               className="form-control"
-              id="exampleInputEmail1"
+              id="loginUsername"
+              autoComplete="username"
             />
           </div>
           <div className="mb-3">
             <label className="form-label">Password</label>
             <input
               name="password"
-              value={this.state.user_input.password}
-              onChange={(e) => this.QGetTextFromField(e)}
+              value={user_input.password}
+              onChange={this.QGetTextFromField}
+              onKeyDown={(e) => e.key === "Enter" && this.QPostLogin()}
               type="password"
               className="form-control"
-              id="exampleInputPassword1"
+              id="loginPassword"
+              autoComplete="current-password"
             />
           </div>
           <div className="form-check">
             <input
               className="form-check-input"
               type="checkbox"
-              value="true"
               name="remember_me"
-              id="flexCheckDefault"
-              onChange={(e) => this.QGetRememberMe(e)}
-              checked={this.state.user_input.remember_me}
+              id="rememberMe"
+              onChange={this.QGetRememberMe}
+              checked={user_input.remember_me}
             />
-            <label className="form-check-label" htmlFor="flexCheckDefault">
-              Remember me
-            </label>
+            <label className="form-check-label" htmlFor="rememberMe">Remember me</label>
           </div>
         </form>
+
         <div style={{ textAlign: "center" }}>
-        <button
-          style={{ margin: "10px" }}
-          onClick={() => this.QPostLogin()}
-          className="btn btn-primary bt"
-        >
-          Sign
-        </button>
-        <button
+          <button style={{ margin: "10px" }} onClick={this.QPostLogin} className="btn btn-primary bt" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+          <button
             style={{ margin: "10px" }}
             onClick={() => this.props.QSetView({ page: "signup" })}
             className="btn btn-secondary"
+            type="button"
           >
             Register
           </button>
@@ -190,25 +156,19 @@ handleForgotInfo = () => {
             style={{ margin: "10px" }}
             onClick={() => this.setState({ showForgotPopup: true })}
             className="btn btn-warning"
+            type="button"
           >
             Forgot Login Info
           </button>
-          </div>
+        </div>
 
-        {/* Display success or error messages */}
-        {this.state.status.success ? (
-          <p className="alert alert-success" role="alert">
-            {this.state.status.msg}
+        {status.msg ? (
+          <p className={`alert ${status.success ? "alert-success" : "alert-danger"}`} role="alert" style={{ margin: "0 20px 20px" }}>
+            {status.msg}
           </p>
         ) : null}
 
-        {!this.state.status.success && this.state.status.msg !== "" ? (
-          <p className="alert alert-danger" role="alert">
-            {this.state.status.msg}
-          </p>
-        ) : null}
-        {/* Forgot Login Info Popup */}
-        {this.state.showForgotPopup && (
+        {showForgotPopup && (
           <div
             style={{
               position: "fixed",
@@ -219,6 +179,8 @@ handleForgotInfo = () => {
               border: "1px solid black",
               padding: "20px",
               zIndex: 1000,
+              width: 360,
+              maxWidth: "90vw",
             }}
           >
             <h5>Forgot Login Info</h5>
@@ -226,26 +188,16 @@ handleForgotInfo = () => {
             <input
               type="text"
               className="form-control"
-              value={this.state.phone_number}
-              onChange={(e) =>
-                this.setState({ phone_number: e.target.value })
-              }
+              value={phone_number}
+              onChange={(e) => this.setState({ phone_number: e.target.value })}
               placeholder="Enter your phone number"
             />
-            <button
-              className="btn btn-primary"
-              style={{ marginTop: "10px" }}
-              onClick={this.handleForgotInfo}
-            >
-              Submit
-            </button>
-            <button
-              className="btn btn-secondary"
-              style={{ marginTop: "10px", marginLeft: "10px" }}
-              onClick={() => this.setState({ showForgotPopup: false })}
-            >
-              Cancel
-            </button>
+            <div style={{ marginTop: "10px" }}>
+              <button className="btn btn-primary" onClick={this.QHandleForgot}>Submit</button>
+              <button className="btn btn-secondary" style={{ marginLeft: "10px" }} onClick={() => this.setState({ showForgotPopup: false })}>
+                Cancel
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -253,12 +205,9 @@ handleForgotInfo = () => {
   }
 }
 
-
 LoginView.propTypes = {
   QUserFromChild: PropTypes.func.isRequired,
   QSetView: PropTypes.func.isRequired,
 };
 
-
-
-export default LoginView
+export default LoginView;

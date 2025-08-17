@@ -1,58 +1,73 @@
 import React from "react";
 
-export default function AboutAppView() {
-  return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">About This Application</h1>
+class AboutView extends React.Component {
+  QBack = () => {
+    if (this.props.QSetView) this.props.QSetView({ page: "home" });
+  };
 
-      <section className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Overview</h2>
-        <p>
-          This web application is designed to manage coffee vending machines, their
-          inventory, notifications, users, and geographic locations. It supports
-          three types of users: <strong>Owner</strong>, <strong>Manager</strong>, and
-          <strong> Worker</strong>. Real-time functionality is enabled via Socket.IO.
-        </p>
-      </section>
+  render() {
+    return (
+      <div className="card" style={{ margin: "10px", padding: "16px" }}>
+        <div className="mb-3">
+          <button className="btn btn-secondary" onClick={this.QBack}>
+            ← Back
+          </button>
+        </div>
 
-      <section className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Main Features</h2>
-        <ul className="list-disc ml-6 space-y-1">
-          <li><strong>Machine View:</strong> View and manage machine data.</li>
-          <li><strong>Upload View:</strong> Upload performance or technical logs.</li>
-          <li><strong>Inventory View:</strong> Add products with type and weight per machine.</li>
-          <li><strong>Cash Flow:</strong> Input cash collections per machine with date/amount.</li>
-          <li><strong>Notifications:</strong> Owners send notifications to workers; workers can mark them as done.</li>
-          <li><strong>Map View:</strong> View machine and worker locations. Click on map to add machines.</li>
-          <li><strong>Users View:</strong> (Owner-only) Assign users as managers to limit their access.</li>
-        </ul>
-      </section>
+        <h3 className="mb-3">About This Application</h3>
 
-      <section className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Roles & Permissions</h2>
-        <ul className="list-disc ml-6 space-y-1">
-          <li><strong>Owner:</strong> Full access to all views including user management and notification control.</li>
-          <li><strong>Manager:</strong> Cannot manage users but can use all operational views.</li>
-          <li><strong>Worker:</strong> Sees only assigned notifications, can upload logs, and view maps.</li>
-        </ul>
-      </section>
+        <div className="mb-4">
+          <h5 className="mb-2">Overview</h5>
+          <p className="mb-0">
+            This system manages coffee vending machines, their product stock, cash flow,
+            reports from machines, user notifications, and map locations. It supports
+            three roles: <b>Owner</b>, <b>Manager</b>, and <b>Worker</b>, and uses
+            real-time updates over Socket.IO.
+          </p>
+        </div>
 
-      <section className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Real-Time Features</h2>
-        <p>
-          Notifications are pushed to workers instantly upon sending. Once a worker marks a
-          task done, the owner is notified in real time.
-        </p>
-      </section>
+        <div className="mb-4">
+          <h5 className="mb-2">Main Features</h5>
+          <ul className="mb-0">
+            <li><b>Machines:</b> Browse all machines, filter/sort, open a machine to edit details and view its data by date range.</li>
+            <li><b>Data Upload:</b> Upload a machine report file; the server parses it and stores Selections, Failures, Totals, Price Bands, Coin Mech, etc.</li>
+            <li><b>Product:</b> Insert product grams per machine with date/time.</li>
+            <li><b>Cash Flow:</b> Insert cashflow rows (type, amount, optional description) with date/time.</li>
+            <li><b>Notifications:</b> Send to any user; notifications show recipient name and timestamp; workers can mark them as done.</li>
+            <li><b>Map:</b> See machines; click the map to add a machine. Owners/managers can request workers to refresh their live location for routing.</li>
+            <li><b>Users:</b> Manage user info and roles (owner only).</li>
+          </ul>
+        </div>
 
-      <section>
-        <h2 className="text-2xl font-semibold mb-2">Adding Machines</h2>
-        <p>
-          Click on the map to add a new machine. Fill out machine details like ID, name,
-          type, location, or check "Store" if location isn't applicable. These are saved
-          live to the system.
-        </p>
-      </section>
-    </div>
-  );
+        <div className="mb-4">
+          <h5 className="mb-2">Roles & Permissions</h5>
+          <ul className="mb-0">
+            <li><b>Owner:</b> Full access to all features, including Users, Machines, Product, Cash Flow, Notifications, Upload, and Map; can refresh all workers’ locations.</li>
+            <li><b>Manager:</b> Full operational access except Users; can refresh all workers’ locations.</li>
+            <li><b>Worker:</b> Sees only personal notifications, can upload reports, and use Map routing; no access to Users, Cash Flow, or Machines administration.</li>
+          </ul>
+        </div>
+
+        <div className="mb-4">
+          <h5 className="mb-2">Real-Time</h5>
+          <p className="mb-0">
+            Notifications are delivered instantly. When a worker marks a task as done,
+            owner/manager views update live. Owners/managers can broadcast a one-time
+            request for workers to report their current location.
+          </p>
+        </div>
+
+        <div>
+          <h5 className="mb-2">Adding Machines</h5>
+          <p className="mb-0">
+            Use the Map: click a location to open the form, enter machine details,
+            choose “use current date & time” or pick a custom start date/time, and save.
+            If the machine is stored off-site, mark it as “Store”.
+          </p>
+        </div>
+      </div>
+    );
+  }
 }
+
+export default AboutView;
