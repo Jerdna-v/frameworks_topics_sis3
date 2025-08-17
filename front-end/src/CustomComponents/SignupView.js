@@ -66,7 +66,7 @@ class SignupView extends React.Component {
 
   render() {
     return (
-      <div
+<div
         className="card"
         style={{
           width: "400px",

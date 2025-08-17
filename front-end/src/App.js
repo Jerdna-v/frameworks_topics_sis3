@@ -1,13 +1,20 @@
 import { Component } from "react";
-import { SIGNUP, LOGIN, HOME, UPLOAD, MACHINES } from "./Utils/Constants";
+import { SIGNUP, LOGIN, HOME, UPLOAD, MACHINES, NOTIFICATIONS, PRODUCT, CASHFLOW, SENDNOTIFICATION, MAP, USERS, ABOUT, MACHINEDETAILS } from "./Utils/Constants";
 import HomeView from "./CustomComponents/HomeView";
 import SignupView from "./CustomComponents/SignupView";
 import LoginView from "./CustomComponents/LoginView";
 import FilesUploadComponent from "./CustomComponents/FilesUpload";
 import MachineView from "./CustomComponents/MachineView";
-import axios from "axios";
-import { API_URL } from "./Utils/Configuration";
+import CashFlowForm from "./CustomComponents/CashFlowForm";
+import InventoryInput from "./CustomComponents/InventoryInput";
+import NotificationView from "./CustomComponents/NotificationView";
+import SendNotification from "./CustomComponents/SendNotification";
+import UserView from "./CustomComponents/UserView";
+import AboutView from "./CustomComponents/AboutView";
+import MachineDetailsPage from "./CustomComponents/MachineDetailsPage";
 import Cookies from "universal-cookie";
+import NotificationsView from "./CustomComponents/NotificationView";
+import MapView from "./CustomComponents/MapView";
 const cookies = new Cookies();
 
 class App extends Component {
@@ -46,8 +53,24 @@ class App extends Component {
         return <HomeView user={this.state.user} QSetView={this.QSetView} QLogout={this.QPostLogout} />;
       case UPLOAD:
         return <FilesUploadComponent />;
+      case NOTIFICATIONS:
+        return <NotificationView QSetView={this.QSetView} />;
+      case PRODUCT:
+        return <InventoryInput QSetView={this.QSetView} />;
+      case CASHFLOW:
+        return <CashFlowForm QSetView={this.QSetView} />;
+      case SENDNOTIFICATION:
+        return <SendNotification QSetView={this.QSetView} />;
+      case MAP:
+        return <MapView QSetView={this.QSetView} />;
       case MACHINES:
         return <MachineView QSetView={this.QSetView} />;
+      case USERS:
+        return <UserView QSetView={this.QSetView} />;
+      case ABOUT:
+        return <AboutView QSetView={this.QSetView} />;
+      case MACHINEDETAILS:
+        return <MachineDetailsPage QSetView={this.QSetView} />;
       default:
         return <LoginView QUserFromChild={this.QSetLoggedIn} />;
     }

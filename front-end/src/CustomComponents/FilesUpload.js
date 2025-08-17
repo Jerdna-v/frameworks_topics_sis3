@@ -14,6 +14,7 @@ class FilesUpload extends Component {
       },
     };
   }
+  
   // differnt types of encoding of sending from data. Deafualt is application/x-www-form-urlencoded 
   // for sending files you need to do multipart/form-data
   uploadFile(event){
@@ -22,14 +23,12 @@ class FilesUpload extends Component {
     axios
     .post(`${API_URL}/uploadFile`, data)
     .then((res) => {
-      // Handle successful upload
       this.setState({
         uploadStatus: { success: true, msg: "File uploaded successfully!" },
       });
       console.log(res.data);
     })
     .catch((err) => {
-      // Handle upload failure
       this.setState({
         uploadStatus: { success: false, msg: "File upload failed. Try again." },
       });
@@ -39,7 +38,7 @@ class FilesUpload extends Component {
 
   render() {
     return (
-      <div
+<div
         className="card"
         style={{
           margin: "10px",
@@ -62,7 +61,6 @@ class FilesUpload extends Component {
             onChange={(e) => this.uploadFile(e)}
           />
         </div>
-        {/* Show upload status */}
         {this.state.uploadStatus.msg && (
           <p
             className={`alert ${

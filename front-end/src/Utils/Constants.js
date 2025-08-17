@@ -7,5 +7,11 @@ export const NOVICA = 'novica';
 export const HOME = 'home';
 export const UPLOAD = 'upload';
 export const LOGOUT = 'logout';
+export const NOTIFICATIONS = 'notifications';
+export const PRODUCT = 'product';
+export const CASHFLOW = 'cashflow';
+export const SENDNOTIFICATION = 'sendnotification';
 export const MACHINES = 'machines';
-
+export const MAP = 'map';
+export const USERS = 'users';
+export const MACHINEDETAILS = 'machinedetails';

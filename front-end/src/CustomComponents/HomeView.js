@@ -1,20 +1,22 @@
 import React from "react";
+import { API_URL } from "../Utils/Configuration";
 import PropTypes from "prop-types";
 
-class HomeView extends React.Component {
+
+class HomeView extends React.Component{
     constructor(props) {
       super(props);
       this.state = {
         buttons: [
-          { id: 1, label: "Option 1", onClick: () => console.log("Option 1 clicked") },
-          { id: 2, label: "Option 2", onClick: () => console.log("Option 2 clicked") },
+          { id: 1, label: "Notifications", onClick: () => this.props.QSetView({ page: "notifications" }) },
+          { id: 2, label: "Product", onClick: () => this.props.QSetView({ page: "product" }) },
           { id: 3, label: "Data Upload", onClick: () => this.props.QSetView({ page: "upload" }) },
           { id: 4, label: "Machines", onClick: () => this.props.QSetView({ page: "machines" }) }, // New Machines Button
-          { id: 5, label: "Option 5", onClick: () => console.log("Option 5 clicked") },
-          { id: 6, label: "Option 6", onClick: () => console.log("Option 6 clicked") },
-          { id: 7, label: "Option 7", onClick: () => console.log("Option 7 clicked") },
-          { id: 8, label: "Option 8", onClick: () => console.log("Option 8 clicked") },
-          { id: 9, label: "Option 9", onClick: () => console.log("Option 9 clicked") },
+          { id: 5, label: "CashFlow", onClick: () => this.props.QSetView({ page: "cashflow" }) },
+          { id: 6, label: "Users", onClick: () => this.props.QSetView({ page: "users" }) },
+          { id: 7, label: "Send Notification", onClick: () => this.props.QSetView({ page: "sendnotification" }) },
+          { id: 8, label: "Map", onClick: () => this.props.QSetView({ page: "map" }) },
+          { id: 9, label: "About", onClick: () => this.props.QSetView({ page: "about" }) },
         ],
       };
     }
