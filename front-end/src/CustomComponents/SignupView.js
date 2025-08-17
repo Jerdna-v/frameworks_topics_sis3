@@ -15,57 +15,76 @@ class SignupView extends React.Component {
       },
       status: {
         success: false,
-        msg: ""
-      }
-    }
+        msg: "",
+      },
+      submitting: false,
+    };
   }
 
-  // QGetTextFromField=(e)=>{
-  //   this.setState({ [e.target.name]: e.target.value})
-  //   console.log(this.state)
-  // }
   QGetTextFromField = (e) => {
-    this.setState(this.state.user_input[e.target.name] = [e.target.value])
-    console.log(this.state)
-  }
+    const { name, value } = e.target;
+    this.setState((prev) => ({
+      user_input: {
+        ...prev.user_input,
+        [name]: value,
+      },
+    }));
+  };
 
-  QPostSignup = () => {
+  QPostSignup = async () => {
     const { name, username, phone, password, confirm_password } =
       this.state.user_input;
-      if (!username || !password || !confirm_password || !name || !phone) {
-        this.setState({
-          status: { success: false, msg: "A field is missing!" },
-        });
-        return;
-      }
+
+    if (!username || !password || !confirm_password || !name || !phone) {
+      this.setState({
+        status: { success: false, msg: "A field is missing!" },
+      });
+      return;
+    }
     if (String(password) !== String(confirm_password)) {
       this.setState({
         status: { success: false, msg: "Passwords do not match!" },
       });
       return;
     }
-    console.log()
-    axios.post(API_URL + '/users/register', {
-      username: this.state.user_input.username,
-      email: this.state.user_input.email,
-      password: this.state.user_input.password
-    })
-      .then(response => {
-        /// TODO: You should indicate if the element was added, or if not show the error
-        this.setState(this.state.status = response.data)
-        console.log("Sent to server...")
-      })
-      .catch(err => {
-        console.log(err)
-        this.setState({
-          status: { success: false, msg: "Something went wrong. Please try again." },
+
+    try {
+      this.setState({ submitting: true, status: { success: false, msg: "" } });
+
+      const res = await axios.post(`${API_URL}/users/register`, {
+        username,
+        password,
+        name,
+        phone,
       });
-      })
-  }
+
+      const serverStatus = res.data?.status || {};
+      this.setState({
+        status: serverStatus,
+        submitting: false,
+      });
+
+      // ✅ If registration is successful, go to login after 1s
+      if (serverStatus.success) {
+        setTimeout(() => {
+          window.location.href = "/"; // change to your login route if different
+        }, 1000);
+      }
+    } catch (err) {
+      console.error(err);
+      this.setState({
+        status: { success: false, msg: "Something went wrong. Please try again." },
+        submitting: false,
+      });
+    }
+  };
 
   render() {
+    const { username, phone, name, password, confirm_password } =
+      this.state.user_input;
+
     return (
-<div
+      <div
         className="card"
         style={{
           width: "400px",
@@ -75,32 +94,37 @@ class SignupView extends React.Component {
           marginBottom: "10px",
         }}
       >
-        <form style={{ margin: "20px" }}>
-        <div className="mb-3">
+        <form style={{ margin: "20px" }} onSubmit={(e)=>{e.preventDefault(); this.QPostSignup();}}>
+          <div className="mb-3">
             <label className="form-label">Name</label>
             <input
               name="name"
-              onChange={(e) => this.QGetTextFromField(e)}
+              value={name}
+              onChange={this.QGetTextFromField}
               type="text"
               className="form-control"
               placeholder="Enter your name"
             />
           </div>
+
           <div className="mb-3">
             <label className="form-label">Username</label>
             <input
               name="username"
-              onChange={(e) => this.QGetTextFromField(e)}
+              value={username}
+              onChange={this.QGetTextFromField}
               type="text"
               className="form-control"
               placeholder="Enter your username"
             />
           </div>
+
           <div className="mb-3">
             <label className="form-label">Phone Number</label>
             <input
               name="phone"
-              onChange={(e) => this.QGetTextFromField(e)}
+              value={phone}
+              onChange={this.QGetTextFromField}
               type="text"
               className="form-control"
               placeholder="Enter your phone number"
@@ -109,36 +133,53 @@ class SignupView extends React.Component {
               We'll never share your phone number with anyone else.
             </div>
           </div>
+
           <div className="mb-3">
             <label className="form-label">Password</label>
             <input
               name="password"
-              onChange={(e) => this.QGetTextFromField(e)}
+              value={password}
+              onChange={this.QGetTextFromField}
               type="password"
               className="form-control"
               placeholder="Enter your password"
             />
           </div>
+
           <div className="mb-3">
             <label className="form-label">Confirm Password</label>
             <input
               name="confirm_password"
-              onChange={(e) => this.QGetTextFromField(e)}
+              value={confirm_password}
+              onChange={this.QGetTextFromField}
               type="password"
               className="form-control"
               placeholder="Re-enter your password"
             />
           </div>
-        </form>
-        <button
-          style={{ margin: "10px" }}
-          onClick={() => this.QPostSignup()}
-          className="btn btn-primary"
-        >
-          Submit
-        </button>
 
-        {/* Display success or error messages */}
+          <div className="d-flex justify-content-between mt-3">
+            {/* ✅ Back to login */}
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => { window.location.href = "/"; }} // change "/" if your login page route is different
+            >
+              Back to Login
+            </button>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={this.state.submitting}
+            >
+              {this.state.submitting ? "Submitting..." : "Submit"}
+            </button>
+          </div>
+        </form>
+
+        {/* messages */}
         {this.state.status.success ? (
           <p className="alert alert-success" role="alert">
             {this.state.status.msg}
@@ -155,4 +196,4 @@ class SignupView extends React.Component {
   }
 }
 
-export default SignupView
+export default SignupView;
