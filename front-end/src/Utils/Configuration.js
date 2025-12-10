@@ -1,1 +1,1 @@
-export const API_URL = "http://88.200.63.148:8118"
+export const API_URL = "https://sangrup.qzz.io"

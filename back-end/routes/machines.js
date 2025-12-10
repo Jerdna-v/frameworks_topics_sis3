@@ -307,6 +307,31 @@ machines.get("/:mid/predict-refill", async (req, res) => {
     res.json({ suggestion: "error" });
   }
 });
+// Simple validation route for frontend checks
+machines.get("/:mid/check", async (req, res) => {
+  try {
+    const mid = Number(req.params.mid);
+    if (!mid) return res.json({ exists: false });
+
+    const rows = await DB.oneMachine(mid);
+    const machine = Array.isArray(rows) ? rows[0] : rows;
+
+    if (!machine) {
+      return res.json({ exists: false });
+    }
+
+    return res.json({
+      exists: true,
+      mid: machine.mid,
+      name: machine.name || "(no name)",
+      type: machine.type || null,
+      location: machine.location || null,
+    });
+  } catch (err) {
+    console.error("Machine check error:", err);
+    return res.status(500).json({ exists: false, msg: "Database error" });
+  }
+});
 
 module.exports = machines;
   

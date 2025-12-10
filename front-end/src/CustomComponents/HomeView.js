@@ -15,6 +15,9 @@ class HomeView extends React.Component {
         { id: 7, label: "Send Notification", page: "sendnotification" },
         { id: 8, label: "Map", page: "map" },
         { id: 9, label: "About", page: "about" },
+        { id: 10, label: "Mechanical", page: "mechanical" },
+        { id: 11, label: "Service", page: "service" },
+
       ],
     };
   }

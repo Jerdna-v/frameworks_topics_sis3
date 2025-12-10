@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 
-class InventoryInput extends React.Component {
+class MechanicalInput extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -9,7 +9,7 @@ class InventoryInput extends React.Component {
       date: "",
       time: "",
       mid: "",
-      products: [{ product_type: "", grams: "", description: "" }],
+      mechanical: "",
       message: "",
       machineCheck: null, // { valid: bool, name?: string }
     };
@@ -21,50 +21,29 @@ class InventoryInput extends React.Component {
 
   // --- validate machine id ---
   QCheckMachine = async (mid) => {
-  if (!mid) {
-    this.setState({ machineCheck: null });
-    return;
-  }
-  try {
-    const res = await axios.get(`/machines/${mid}/check`);
-    if (res.data && res.data.exists) {
-      this.setState({
-        machineCheck: { valid: true, name: res.data.name || "(no name)" },
-      });
-    } else {
+    if (!mid) {
+      this.setState({ machineCheck: null });
+      return;
+    }
+    try {
+      const res = await axios.get(`/machines/${mid}/check`);
+      if (res.data && res.data.exists) {
+        this.setState({
+          machineCheck: { valid: true, name: res.data.name || "(no name)" },
+        });
+      } else {
+        this.setState({ machineCheck: { valid: false } });
+      }
+    } catch {
       this.setState({ machineCheck: { valid: false } });
     }
-  } catch {
-    this.setState({ machineCheck: { valid: false } });
-  }
-};
-
-
-  QHandleProductChange = (index, field, value) => {
-    const updated = [...this.state.products];
-    updated[index][field] = value;
-    this.setState({ products: updated });
-  };
-
-  QAddProductField = () => {
-    this.setState((prev) => ({
-      products: [
-        ...prev.products,
-        { product_type: "", grams: "", description: "" },
-      ],
-    }));
-  };
-
-  QRemoveProductField = (index) => {
-    this.setState((prev) => ({
-      products: prev.products.filter((_, i) => i !== index),
-    }));
   };
 
   QHandleSubmit = async (e) => {
     e.preventDefault();
     this.setState({ message: "" });
-    const { useNow, date, time, mid, products } = this.state;
+
+    const { useNow, date, time, mid, mechanical } = this.state;
 
     if (!useNow && (!date || !time)) {
       this.setState({
@@ -74,21 +53,28 @@ class InventoryInput extends React.Component {
       return;
     }
 
+    const mech = parseInt(mechanical, 10);
+    if (!Number.isFinite(mech) || mech < 0) {
+      this.setState({
+        message: "Mechanical number must be a non-negative integer.",
+      });
+      return;
+    }
+    if (!mid) {
+      this.setState({ message: "Machine ID is required." });
+      return;
+    }
+
     try {
       const payload = {
         current: useNow,
         date,
         time,
         mid: parseInt(mid, 10),
-        products: products.map((p) => ({
-          product_type: p.product_type,
-          grams: parseFloat(p.grams),
-          description: p.description?.trim() || null,
-        })),
+        mechanical: mech,
       };
-
-      const res = await axios.post("/inventory", payload);
-      this.setState({ message: res.data?.msg || "Inventory saved." });
+      const res = await axios.post("/mechanical", payload);
+      this.setState({ message: res.data?.msg || "Mechanical saved." });
     } catch (err) {
       this.setState({
         message: err.response?.data?.msg || "Submission failed.",
@@ -97,7 +83,7 @@ class InventoryInput extends React.Component {
   };
 
   render() {
-    const { useNow, date, time, mid, products, message, machineCheck } =
+    const { useNow, date, time, mid, mechanical, message, machineCheck } =
       this.state;
 
     return (
@@ -111,7 +97,7 @@ class InventoryInput extends React.Component {
           </button>
         </div>
 
-        <h2 className="text-xl font-bold mb-4">Inventory Input</h2>
+        <h2 className="text-xl font-bold mb-4">Mechanical Counter Input</h2>
 
         <form onSubmit={this.QHandleSubmit} className="space-y-4">
           {/* Current time */}
@@ -153,7 +139,7 @@ class InventoryInput extends React.Component {
             </div>
           </div>
 
-          {/* Machine ID with check */}
+          {/* Machine ID */}
           <div>
             <label className="block font-medium">Machine ID</label>
             <input
@@ -179,59 +165,19 @@ class InventoryInput extends React.Component {
             )}
           </div>
 
-          {/* Products */}
+          {/* Mechanical number */}
           <div>
-            <label className="block font-medium">Products</label>
-            {products.map((p, i) => (
-              <div key={i} className="flex items-center gap-2 mb-2">
-                <input
-                  type="text"
-                  placeholder="Product Type"
-                  value={p.product_type}
-                  onChange={(e) =>
-                    this.QHandleProductChange(i, "product_type", e.target.value)
-                  }
-                  required
-                  className="border p-2 flex-1"
-                />
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Grams"
-                  value={p.grams}
-                  onChange={(e) =>
-                    this.QHandleProductChange(i, "grams", e.target.value)
-                  }
-                  required
-                  className="border p-2 w-28"
-                />
-                <input
-                  type="text"
-                  placeholder="Description (optional)"
-                  value={p.description || ""}
-                  onChange={(e) =>
-                    this.QHandleProductChange(i, "description", e.target.value)
-                  }
-                  className="border p-2 flex-[1.2]"
-                />
-                {products.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => this.QRemoveProductField(i)}
-                    className="text-red-500"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={this.QAddProductField}
-              className="text-blue-500 mt-2"
-            >
-              + Add Another Product
-            </button>
+            <label className="block font-medium">Mechanical Number</label>
+            <input
+              type="number"
+              step="1"
+              min="0"
+              placeholder="Overall done selections counter"
+              value={mechanical}
+              onChange={(e) => this.setState({ mechanical: e.target.value })}
+              required
+              className="border p-2 w-full"
+            />
           </div>
 
           <button
@@ -248,4 +194,4 @@ class InventoryInput extends React.Component {
   }
 }
 
-export default InventoryInput;
+export default MechanicalInput;

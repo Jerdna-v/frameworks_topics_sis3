@@ -84,8 +84,10 @@ io.on("connection", (socket) => {
 
 
 const DB = require('./db/dbConn.js');
-DB.createRTables().then(console.log).catch(console.error);
-const notifications = require('./routes/notifications');
+
+DB.createRTables()
+  .then((msg) => console.log(msg))
+  .catch((err) => console.error("Error creating tables:", err));const notifications = require('./routes/notifications');
 app.use('/notifications', notifications);
 const map = require('./routes/map');
 app.use('/map', map);
@@ -106,6 +108,9 @@ const upload = require('./routes/upload');
 app.use('/machines', machines);
 app.use('/users', users);
 app.use('/uploadFile', upload);
+app.use("/mechanical", require("./routes/mechanical"));
+app.use("/service", require("./routes/service"));
+
 
 const path = require('path');
 app.use(express.static(path.join(__dirname, 'build')));

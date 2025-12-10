@@ -10,12 +10,33 @@ class CashFlowInput extends React.Component {
       time: "",
       mid: "",
       rows: [{ cashtype: "", amount: "", description: "" }],
-      message: ""
+      message: "",
+      machineCheck: null, // { valid: bool, name?: string }
     };
   }
 
   QSetViewInParent = (obj) => {
     if (this.props.QSetView) this.props.QSetView(obj);
+  };
+
+  // --- validate machine id ---
+  QCheckMachine = async (mid) => {
+    if (!mid) {
+      this.setState({ machineCheck: null });
+      return;
+    }
+    try {
+      const res = await axios.get(`/machines/${mid}/check`);
+      if (res.data && res.data.exists) {
+        this.setState({
+          machineCheck: { valid: true, name: res.data.name || "(no name)" },
+        });
+      } else {
+        this.setState({ machineCheck: { valid: false } });
+      }
+    } catch {
+      this.setState({ machineCheck: { valid: false } });
+    }
   };
 
   QHandleRowChange = (index, field, value) => {
@@ -26,13 +47,13 @@ class CashFlowInput extends React.Component {
 
   QAddRow = () => {
     this.setState((prev) => ({
-      rows: [...prev.rows, { cashtype: "", amount: "", description: "" }]
+      rows: [...prev.rows, { cashtype: "", amount: "", description: "" }],
     }));
   };
 
   QRemoveRow = (index) => {
     this.setState((prev) => ({
-      rows: prev.rows.filter((_, i) => i !== index)
+      rows: prev.rows.filter((_, i) => i !== index),
     }));
   };
 
@@ -43,7 +64,8 @@ class CashFlowInput extends React.Component {
 
     if (!useNow && (!date || !time)) {
       this.setState({
-        message: "Please provide both date and time, or enable 'Use current time'."
+        message:
+          "Please provide both date and time, or enable 'Use current time'.",
       });
       return;
     }
@@ -57,21 +79,21 @@ class CashFlowInput extends React.Component {
         items: rows.map((r) => ({
           cashtype: r.cashtype,
           amount: Number(r.amount),
-          description: r.description?.trim() || null
-        }))
+          description: r.description?.trim() || null,
+        })),
       };
 
       const res = await axios.post("/cashflow/bulk", payload);
       this.setState({ message: res.data?.msg || "Cash flow saved." });
     } catch (err) {
       this.setState({
-        message: err.response?.data?.msg || "Submission failed."
+        message: err.response?.data?.msg || "Submission failed.",
       });
     }
   };
 
   render() {
-    const { useNow, date, time, mid, rows, message } = this.state;
+    const { useNow, date, time, mid, rows, message, machineCheck } = this.state;
 
     return (
       <div className="p-6 max-w-2xl mx-auto">
@@ -87,6 +109,7 @@ class CashFlowInput extends React.Component {
         <h2 className="text-xl font-bold mb-4">Cash Flow Input</h2>
 
         <form onSubmit={this.QHandleSubmit} className="space-y-4">
+          {/* Current time */}
           <div className="flex items-center gap-2">
             <input
               id="useNow"
@@ -99,6 +122,7 @@ class CashFlowInput extends React.Component {
             </label>
           </div>
 
+          {/* Date & time */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-medium">Date</label>
@@ -124,17 +148,33 @@ class CashFlowInput extends React.Component {
             </div>
           </div>
 
+          {/* Machine ID with check */}
           <div>
             <label className="block font-medium">Machine ID</label>
             <input
               type="number"
               value={mid}
-              onChange={(e) => this.setState({ mid: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                this.setState({ mid: val }, () => this.QCheckMachine(val));
+              }}
               required
               className="border p-2 w-full"
             />
+            {machineCheck && (
+              <p
+                className={`mt-1 text-sm ${
+                  machineCheck.valid ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {machineCheck.valid
+                  ? `✔ Machine: ${machineCheck.name}`
+                  : "✖ Invalid machine ID"}
+              </p>
+            )}
           </div>
 
+          {/* Cash items */}
           <div>
             <label className="block font-medium">Cash Items</label>
             {rows.map((r, i) => (
@@ -143,7 +183,9 @@ class CashFlowInput extends React.Component {
                   type="text"
                   placeholder="Cashflow Type (e.g., refill, service, rent)"
                   value={r.cashtype}
-                  onChange={(e) => this.QHandleRowChange(i, "cashtype", e.target.value)}
+                  onChange={(e) =>
+                    this.QHandleRowChange(i, "cashtype", e.target.value)
+                  }
                   required
                   className="border p-2 flex-1"
                 />
@@ -151,7 +193,9 @@ class CashFlowInput extends React.Component {
                   type="number"
                   placeholder="Amount"
                   value={r.amount}
-                  onChange={(e) => this.QHandleRowChange(i, "amount", e.target.value)}
+                  onChange={(e) =>
+                    this.QHandleRowChange(i, "amount", e.target.value)
+                  }
                   required
                   className="border p-2 w-28"
                 />
@@ -159,7 +203,9 @@ class CashFlowInput extends React.Component {
                   type="text"
                   placeholder="Description (optional)"
                   value={r.description}
-                  onChange={(e) => this.QHandleRowChange(i, "description", e.target.value)}
+                  onChange={(e) =>
+                    this.QHandleRowChange(i, "description", e.target.value)
+                  }
                   className="border p-2 flex-[1.2]"
                 />
                 {rows.length > 1 && (

@@ -15,3 +15,5 @@ export const MACHINES = 'machines';
 export const MAP = 'map';
 export const USERS = 'users';
 export const MACHINEDETAILS = 'machinedetails';
+export const MECHANICAL = "mechanical";
+export const SERVICE = "service";

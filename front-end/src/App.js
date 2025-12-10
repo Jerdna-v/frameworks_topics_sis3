@@ -16,8 +16,11 @@ import {
   USERS,
   ABOUT,
   MACHINEDETAILS,
+  MECHANICAL,
+  SERVICE,
 } from "./Utils/Constants";
-
+import ServiceInput from "./CustomComponents/ServiceInput";
+import MechanicalInput from "./CustomComponents/MechanicalInput";
 import HomeView from "./CustomComponents/HomeView";
 import SignupView from "./CustomComponents/SignupView";
 import LoginView from "./CustomComponents/LoginView";
@@ -110,6 +113,10 @@ class App extends Component {
         return <AboutView QSetView={this.QSetView} />;
       case MACHINEDETAILS:
         return <MachineDetailsPage mid={this.state.Novica} QSetView={this.QSetView} />;
+      case MECHANICAL:
+        return <MechanicalInput QSetView={this.QSetView} />;
+      case SERVICE:
+        return <ServiceInput QSetView={this.QSetView} />;
       default:
         return (
           <LoginView

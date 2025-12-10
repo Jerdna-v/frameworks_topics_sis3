@@ -18,7 +18,7 @@ class FilesUpload extends React.Component {
     const data = new FormData();
     data.append("file", e.target.files[0]);
     axios
-      .post(`${API_URL}/uploadFile`, data)
+      .post(API_URL+"/uploadFile", data)
       .then(() => {
         this.setState({ uploadStatus: { success: true, msg: "File uploaded successfully!" } });
       })
