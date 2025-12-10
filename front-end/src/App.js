@@ -18,7 +18,9 @@ import {
   MACHINEDETAILS,
   MECHANICAL,
   SERVICE,
+  PRICEMAPPING,
 } from "./Utils/Constants";
+import PriceMappingPage from "./CustomComponents/PriceMappingPage";
 import ServiceInput from "./CustomComponents/ServiceInput";
 import MechanicalInput from "./CustomComponents/MechanicalInput";
 import HomeView from "./CustomComponents/HomeView";
@@ -117,6 +119,8 @@ class App extends Component {
         return <MechanicalInput QSetView={this.QSetView} />;
       case SERVICE:
         return <ServiceInput QSetView={this.QSetView} />;
+      case PRICEMAPPING:
+        return <PriceMappingPage QSetView={this.QSetView} />;
       default:
         return (
           <LoginView

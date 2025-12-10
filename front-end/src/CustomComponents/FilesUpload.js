@@ -6,7 +6,10 @@ class FilesUpload extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      uploadStatus: { success: null, msg: "" }
+      files: [],
+      uploading: false,
+      results: [],
+      uploadStatus: null,
     };
   }
 
@@ -14,38 +17,147 @@ class FilesUpload extends React.Component {
     if (this.props.QSetView) this.props.QSetView({ page: "home" });
   };
 
-  QFileUpload = (e) => {
+  onFileSelect = (e) => {
+    this.setState({
+      files: Array.from(e.target.files),
+      results: [],
+      uploadStatus: null,
+    });
+  };
+
+  QFileUpload = async () => {
+    if (this.state.files.length === 0) {
+      this.setState({ uploadStatus: { success: false, msg: "No files selected." } });
+      return;
+    }
+
+    this.setState({ uploading: true, results: [], uploadStatus: null });
+
     const data = new FormData();
-    data.append("file", e.target.files[0]);
-    axios
-      .post(API_URL+"/uploadFile", data)
-      .then(() => {
-        this.setState({ uploadStatus: { success: true, msg: "File uploaded successfully!" } });
-      })
-      .catch(() => {
-        this.setState({ uploadStatus: { success: false, msg: "File upload failed. Try again." } });
+    this.state.files.forEach((file) => data.append("files", file));
+
+    try {
+      const res = await axios.post(API_URL + "/uploadFile", data);
+
+      this.setState({
+        uploading: false,
+        results: res.data.results || [],
+        uploadStatus: { success: true, msg: "Upload finished." },
       });
+    } catch (err) {
+      this.setState({
+        uploading: false,
+        uploadStatus: { success: false, msg: "Upload failed. Try again." },
+      });
+    }
   };
 
   render() {
     return (
-      <div className="card" style={{ margin: "10px", padding: "20px", width: "100%", maxWidth: "400px", marginLeft: "auto", marginRight: "auto" }}>
+      <div
+        className="card"
+        style={{
+          margin: "10px",
+          padding: "20px",
+          width: "100%",
+          maxWidth: "600px",
+          marginLeft: "auto",
+          marginRight: "auto",
+        }}
+      >
+        {/* Back button */}
         <div className="mb-3">
           <button className="btn btn-secondary" onClick={this.QBack}>
             ← Back
           </button>
         </div>
 
-        <h3 style={{ margin: "10px" }}>File Upload</h3>
-        <div className="mb-3" style={{ margin: "10px" }}>
-          <label htmlFor="file" className="form-label">Select a file to upload:</label>
-          <input className="form-control" type="file" id="file" onChange={this.QFileUpload} />
+        <h3 className="mb-3">Upload Reports</h3>
+
+        {/* File input */}
+        <div className="mb-3">
+          <label htmlFor="file" className="form-label">
+            Select one or more files:
+          </label>
+          <input
+            className="form-control"
+            type="file"
+            id="file"
+            multiple
+            onChange={this.onFileSelect}
+          />
         </div>
 
-        {this.state.uploadStatus.msg !== "" && (
-          <p className={`alert ${this.state.uploadStatus.success ? "alert-success" : "alert-danger"}`} role="alert">
+        {/* Selected files preview */}
+        {this.state.files.length > 0 && (
+          <div className="mb-3">
+            <strong>Files to upload:</strong>
+            <ul>
+              {this.state.files.map((f, i) => (
+                <li key={i}>{f.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Upload button */}
+        <button
+          className="btn btn-primary"
+          onClick={this.QFileUpload}
+          disabled={this.state.uploading}
+        >
+          {this.state.uploading ? "Uploading…" : "Upload"}
+        </button>
+
+        {/* Spinner */}
+        {this.state.uploading && (
+          <div className="mt-3 text-center">
+            <div className="spinner-border" role="status"></div>
+          </div>
+        )}
+
+        {/* Global upload status */}
+        {this.state.uploadStatus && (
+          <p
+            className={`alert mt-3 ${
+              this.state.uploadStatus.success ? "alert-success" : "alert-danger"
+            }`}
+          >
             {this.state.uploadStatus.msg}
           </p>
+        )}
+
+        {/* Per-file results table */}
+        {this.state.results.length > 0 && (
+          <div className="mt-4">
+            <h5>Result:</h5>
+            <table className="table table-striped">
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Status</th>
+                  <th>Machine ID</th>
+                  <th>Report ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.state.results.map((r, i) => (
+                  <tr key={i}>
+                    <td>{r.file}</td>
+                    <td>
+                      {r.success ? (
+                        <span className="text-success">✓ Success</span>
+                      ) : (
+                        <span className="text-danger">✗ Failed</span>
+                      )}
+                    </td>
+                    <td>{r.mid || "-"}</td>
+                    <td>{r.rid || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     );

@@ -17,3 +17,4 @@ export const USERS = 'users';
 export const MACHINEDETAILS = 'machinedetails';
 export const MECHANICAL = "mechanical";
 export const SERVICE = "service";
+export const PRICEMAPPING = "pricemapping";

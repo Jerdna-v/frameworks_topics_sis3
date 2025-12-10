@@ -599,6 +599,57 @@ dataPool.getReportTotalsByMidRange = async (mid, start, end) => {
   const [rows] = await pool.query(sql, [mid, start, end]);
   return rows;
 };
+// -------------------------------------------------------
+// GET unique selections for a machine
+// -------------------------------------------------------
+dataPool.getUniqueSelections = async (mid) => {
+  const sql = `
+    SELECT DISTINCT selection
+    FROM Selections
+    WHERE mid = ?
+    ORDER BY selection ASC
+  `;
+  const [rows] = await pool.query(sql, [mid]);
+  return rows.map((r) => r.selection);
+};
+
+// -------------------------------------------------------
+// GET existing price mapping for a machine
+// -------------------------------------------------------
+dataPool.getPriceLinks = async (mid) => {
+  const sql = `
+    SELECT selection, type AS price_group
+    FROM Prices
+    WHERE mid = ?
+  `;
+  const [rows] = await pool.query(sql, [mid]);
+  return rows;
+};
+
+// -------------------------------------------------------
+// INSERT price links (delete old + insert new)
+// -------------------------------------------------------
+dataPool.insertPriceLinks = async (mid, links) => {
+  const deleteSql = `DELETE FROM Prices WHERE mid = ?`;
+  await pool.query(deleteSql, [mid]);
+
+  const insertSql = `
+    INSERT INTO Prices (mid, type, selection)
+    VALUES (?, ?, ?)
+  `;
+
+  for (const row of links) {
+    await pool.query(insertSql, [
+      mid,
+      row.price_group.toString(),
+      row.selection.toString(),
+    ]);
+  }
+
+  return true;
+};
+
+
 /* ===================== TABLE CREATION ===================== */
 
 dataPool.createRTables = async () => {
@@ -663,6 +714,15 @@ CREATE TABLE IF NOT EXISTS CashFlow (
   description TEXT,
   FOREIGN KEY (mid) REFERENCES Machines(mid),
   FOREIGN KEY (uid) REFERENCES Users(uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+`;
+  const createPricesTable= `
+CREATE TABLE IF NOT EXISTS Prices (
+  priceid INT AUTO_INCREMENT PRIMARY KEY,
+  mid INT NOT NULL,
+  type VARCHAR(100),
+  selection VARCHAR(100),
+  FOREIGN KEY (mid) REFERENCES Machines(mid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 `;
 

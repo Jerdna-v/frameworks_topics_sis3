@@ -91,6 +91,7 @@ DB.createRTables()
 app.use('/notifications', notifications);
 const map = require('./routes/map');
 app.use('/map', map);
+app.use("/prices", require("./routes/prices.js"));
 const notification = require('./routes/notification');
 app.use('/notification', notification);
 const cashflowRoutes = require("./routes/cashflow");

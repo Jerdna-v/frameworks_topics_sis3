@@ -17,7 +17,7 @@ class HomeView extends React.Component {
         { id: 9, label: "About", page: "about" },
         { id: 10, label: "Mechanical", page: "mechanical" },
         { id: 11, label: "Service", page: "service" },
-
+        { id: 12, label: "Price", page: "pricemapping" },
       ],
     };
   }
@@ -25,7 +25,7 @@ class HomeView extends React.Component {
   QVisibleButtonsForRole = (role) => {
     if (role === "owner") return this.state.buttons;
     if (role === "manager") return this.state.buttons.filter((b) => b.label !== "Users");
-    return this.state.buttons.filter((b) => !["Users", "CashFlow", "Machines"].includes(b.label));
+    return this.state.buttons.filter((b) => !["Users", "CashFlow", "Machines", "Price"].includes(b.label));
   };
 
   render() {
