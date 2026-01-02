@@ -604,14 +604,16 @@ dataPool.getReportTotalsByMidRange = async (mid, start, end) => {
 // -------------------------------------------------------
 dataPool.getUniqueSelections = async (mid) => {
   const sql = `
-    SELECT DISTINCT selection
-    FROM Selections
-    WHERE mid = ?
-    ORDER BY selection ASC
+    SELECT DISTINCT s.type
+    FROM Selections s
+    JOIN Reports r ON s.rid = r.rid
+    WHERE r.mid = ?
+    ORDER BY s.type ASC
   `;
   const [rows] = await pool.query(sql, [mid]);
-  return rows.map((r) => r.selection);
+  return rows.map((r) => r.type);
 };
+
 
 // -------------------------------------------------------
 // GET existing price mapping for a machine
@@ -833,6 +835,7 @@ CREATE TABLE IF NOT EXISTS CoinMechData (
   await pool.query(createCoinMechDataTable);
   await pool.query(createMechanicalTable);
   await pool.query(createServiceTable);
+  await pool.query(createPricesTable);
 
   return "All tables created successfully or already exist.";
 };
